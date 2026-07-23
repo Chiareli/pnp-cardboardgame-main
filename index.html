@@ -1,0 +1,2134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>PnP & Past Up — Grid CMYK Multi-Página</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#1a1a1a;color:#111}
+#app{display:grid;grid-template-columns:282px 1fr;height:100vh}
+
+#panel{background:#f4f3f1;border-right:1px solid #ddd;display:flex;flex-direction:column;overflow:hidden}
+#ps{flex:1;overflow-y:auto;padding:13px;display:flex;flex-direction:column;gap:12px}
+.slabel{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#999;margin-bottom:6px}
+.card{background:#fff;border:1px solid #e8e8e8;border-radius:8px;padding:11px;display:flex;flex-direction:column;gap:7px}
+.row{display:flex;align-items:center;gap:7px}
+.row label{font-size:12px;color:#555;min-width:76px}
+.row input[type=number]{width:58px;padding:3px 6px;font-size:12px;border:1px solid #ddd;border-radius:5px;background:#fff;color:#111}
+.row input[type=number]:focus{outline:2px solid #378ADD}
+.row select{flex:1;padding:3px 6px;font-size:12px;border:1px solid #ddd;border-radius:5px;background:#fff;color:#111}
+.row input[type=checkbox]{width:13px;height:13px;accent-color:#378ADD;cursor:pointer;flex-shrink:0}
+.unit{font-size:11px;color:#bbb}
+.fit-badge{font-size:11px;padding:2px 9px;border-radius:10px;font-weight:600;background:#e6f5ec;color:#1a7a3a;align-self:flex-start}
+.pages-badge{font-size:11px;padding:2px 9px;border-radius:10px;font-weight:600;background:#fef3e2;color:#7a4e00;align-self:flex-start;display:none}
+
+#dropzone{border:2px dashed #ccc;border-radius:8px;padding:16px 12px;text-align:center;cursor:pointer;background:#fff;transition:.15s}
+#dropzone:hover,#dropzone.drag{border-color:#378ADD;background:#f0f7ff}
+#dropzone input{display:none}
+#dz-icon{font-size:22px;margin-bottom:4px;display:block;color:#bbb}
+#dz-text{font-size:12px;color:#999;line-height:1.5}
+
+#img-list{display:flex;flex-direction:column;gap:4px;max-height:165px;overflow-y:auto}
+.ii{display:flex;align-items:center;gap:6px;padding:5px 7px;background:#fff;border:1px solid #eee;border-radius:6px}
+.ithumb{width:28px;height:28px;object-fit:cover;border-radius:3px;border:1px solid #eee;flex-shrink:0}
+.iinfo{flex:1;min-width:0}
+.iname{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#222}
+.idim{font-size:10px;color:#bbb}
+.icnt{font-size:11px;font-weight:600;color:#185FA5;background:#e6f1fb;border-radius:4px;padding:1px 6px;flex-shrink:0}
+.bdel{font-size:10px;padding:2px 6px;border:1px solid #f0a0a0;border-radius:4px;background:transparent;cursor:pointer;color:#c00}
+.bdel:hover{background:#fff0f0}
+.bsm{font-size:11px;padding:3px 8px;border:1px solid #ddd;border-radius:5px;background:#fff;cursor:pointer;color:#444;transition:.12s}
+.bsm:hover{background:#f0f0f0}
+
+#panel-footer{padding:11px 13px;border-top:1px solid #e0e0e0;display:flex;flex-direction:column;gap:6px}
+.bmain{width:100%;padding:10px;font-size:13px;font-weight:600;border:none;border-radius:8px;background:#111;cursor:pointer;color:#fff;transition:.15s}
+.bmain:hover{background:#333}
+.bmain.cmyk-btn{background:#111;position:relative;overflow:hidden}
+.bmain.cmyk-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,176,216,.3),rgba(217,0,130,.3),rgba(240,184,0,.3),rgba(0,0,0,.2));pointer-events:none}
+.bsec{width:100%;padding:7px;font-size:12px;border:1px solid #ddd;border-radius:7px;background:#fff;cursor:pointer;color:#333;transition:.15s}
+.bsec:hover{background:#f5f5f5}
+
+#main{display:flex;flex-direction:column;overflow:hidden;background:#1a1a1a}
+#toolbar{display:flex;align-items:center;gap:6px;padding:8px 13px;border-bottom:1px solid #333;background:#222;flex-shrink:0;flex-wrap:wrap}
+#toolbar .ti{font-size:11px;color:#aaa}
+#toolbar .dot{font-size:11px;color:#555}
+.zctr{display:flex;align-items:center;gap:4px;margin-left:auto}
+.zctr button{font-size:11px;padding:2px 8px;border:1px solid #444;border-radius:5px;background:#333;cursor:pointer;color:#ccc}
+.zctr button:hover{background:#444;color:#fff}
+.zctr span{font-size:11px;min-width:34px;text-align:center;color:#aaa}
+
+#canvas-wrap{flex:1;overflow:auto;background:repeating-conic-gradient(#2a2a2a 0% 25%,#222 0% 50%) 0 0/18px 18px;display:flex;flex-direction:column;align-items:flex-start;padding:20px;gap:22px}
+
+.sheet-wrap{display:flex;flex-direction:column;flex-shrink:0}
+.sheet-label{font-size:10px;color:#555;margin-bottom:5px;font-weight:600;letter-spacing:.06em;user-select:none}
+.sheet-label.active-lbl{color:#bbb}
+.sheet-label.front-lbl{color:#5da8e0}
+.sheet-label.back-lbl{color:#e08c5d}
+.sheet-outer.back-sheet{outline-color:#e08c5d !important}
+.sheet-outer.back-sheet .sheet-inner{transform-origin:0 0}
+.sheet-outer{position:relative;background:#fff;box-shadow:0 4px 28px rgba(0,0,0,.55);flex-shrink:0}
+.sheet-outer.active-sheet{outline:2px solid #378ADD}
+.sheet-inner{position:relative}
+
+.cell{position:absolute;overflow:hidden;cursor:default}
+.cell-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;display:block}
+.cell-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.04);border:1px dashed rgba(0,0,0,.14)}
+.cell-empty span{font-size:9px;color:rgba(0,0,0,.28);pointer-events:none;user-select:none}
+.cell-ov{position:absolute;inset:0;background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;gap:4px;opacity:0;transition:.12s}
+.cell:hover .cell-ov{opacity:1}
+.cell-ov button{font-size:9px;padding:3px 7px;border:none;border-radius:3px;background:rgba(255,255,255,.92);cursor:pointer;font-weight:600;color:#111}
+.cell-ov button:hover{background:#fff}
+.cell-ov .rd{color:#c00}
+
+.bleed-corner{position:absolute;pointer-events:none;z-index:10}
+.bleed-corner svg{display:block}
+
+#infobar{padding:5px 13px;border-top:1px solid #333;font-size:10px;color:#666;display:flex;gap:14px;flex-shrink:0;background:#1e1e1e}
+
+#toast{position:fixed;bottom:66px;left:50%;transform:translateX(-50%);background:#111;color:#fff;font-size:12px;padding:7px 16px;border-radius:20px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;z-index:999;border:1px solid #333}
+#toast.show{opacity:1}
+
+#progress-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center}
+#progress-overlay.show{display:flex}
+#progress-box{background:#1e1e1e;border:1px solid #444;border-radius:12px;padding:30px 38px;text-align:center;min-width:300px}
+#progress-box h3{color:#fff;font-size:15px;margin-bottom:10px;font-weight:500}
+#pb-wrap{height:5px;background:#333;border-radius:3px;overflow:hidden;margin-bottom:10px}
+#pb{height:100%;background:linear-gradient(90deg,#00b0d8,#d90082,#f0b800);width:0%;transition:width .25s}
+#pm{font-size:12px;color:#888}
+
+
+/* ── MODAL VERSO ── */
+#back-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9998;align-items:center;justify-content:center}
+#back-modal-overlay.show{display:flex}
+#back-modal{background:#fff;border-radius:12px;padding:0;width:480px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.4)}
+#back-modal-head{padding:16px 18px 12px;border-bottom:1px solid #eee;flex-shrink:0}
+#back-modal-head h3{font-size:14px;font-weight:600;color:#111;margin-bottom:3px}
+#back-modal-head p{font-size:11px;color:#888;line-height:1.4}
+#back-modal-body{flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:8px}
+.front-card-opt{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1.5px solid #eee;border-radius:8px;cursor:pointer;transition:.12s;user-select:none}
+.front-card-opt:hover{border-color:#378ADD;background:#f5f9ff}
+.front-card-opt.selected{border-color:#378ADD;background:#e8f3ff}
+.front-card-opt .sel-check{width:16px;height:16px;flex-shrink:0;accent-color:#378ADD}
+.front-card-opt img{width:40px;height:56px;object-fit:cover;border-radius:4px;border:1px solid #ddd;flex-shrink:0}
+.front-card-info{flex:1;min-width:0}
+.front-card-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#222}
+.front-card-sub{font-size:10px;color:#aaa}
+.front-card-pos{font-size:10px;color:#378ADD;font-weight:600}
+#back-modal-foot{padding:12px 18px;border-top:1px solid #eee;display:flex;gap:8px;flex-shrink:0;background:#fafafa}
+#back-modal-foot button{flex:1;padding:8px;font-size:12px;font-weight:600;border-radius:7px;cursor:pointer;border:1px solid #ddd;background:#fff}
+#back-modal-foot .confirm-btn{background:#111;color:#fff;border:none}
+#back-modal-foot .confirm-btn:hover{background:#333}
+
+/* back card list */
+#back-cards-list{display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto;margin-top:4px}
+.bcard{display:flex;align-items:center;gap:7px;padding:5px 8px;background:#fff;border:1px solid #eee;border-radius:6px}
+.bcard img{width:28px;height:40px;object-fit:cover;border-radius:3px;border:1px solid #eee;flex-shrink:0}
+.bcard-info{flex:1;min-width:0}
+.bcard-name{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#222}
+.bcard-ref{font-size:10px;color:#378ADD}
+.bcard-unlinked{font-size:10px;color:#e07000}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px}
+
+@media print{
+  #panel,#toolbar,#infobar,#toast,#progress-overlay,.sheet-label{display:none!important}
+  #main{display:block;height:auto}
+  #canvas-wrap{background:white!important;padding:0!important;overflow:visible!important;display:block!important;gap:0!important}
+  .sheet-wrap{display:block}
+  .sheet-outer{box-shadow:none!important;page-break-after:always;margin:0!important;outline:none!important}
+  .sheet-outer:last-child{page-break-after:avoid}
+  .sheet-inner{transform:scale(1)!important;transform-origin:0 0!important}
+}
+</style>
+</head>
+<body>
+<!-- PDF.js Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  if(typeof pdfjsLib!=='undefined'){
+    pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+</script>
+<div id="app">
+
+<!-- PAINEL -->
+<div id="panel">
+<div id="ps">
+
+  <div>
+    <div class="slabel">Folha</div>
+    <div class="card">
+      <div class="row"><label>Formato</label>
+        <select id="sel-fmt">
+          <optgroup label="ISO A">
+            <option value="a4p">A4 Retrato (210×297mm)</option>
+            <option value="a4l">A4 Paisagem (297×210mm)</option>
+            <option value="a3p">A3 Retrato (297×420mm)</option>
+            <option value="a3l">A3 Paisagem (420×297mm)</option>
+            <option value="a5p">A5 Retrato (148×210mm)</option>
+            <option value="a5l">A5 Paisagem (210×148mm)</option>
+          </optgroup>
+          <optgroup label="Americano">
+            <option value="ltp">Letter Retrato (216×279mm)</option>
+            <option value="ltl">Letter Paisagem (279×216mm)</option>
+            <option value="lgp">Legal Retrato (216×356mm)</option>
+            <option value="lgl">Legal Paisagem (356×216mm)</option>
+            <option value="tbp">Tabloid/B Retrato (279×432mm)</option>
+            <option value="tbl">Tabloid/B Paisagem (432×279mm)</option>
+          </optgroup>
+          <optgroup label="Fotográfico">
+            <option value="4x6p">4×6pol Retrato (102×152mm)</option>
+            <option value="4x6l">4×6pol Paisagem (152×102mm)</option>
+            <option value="5x7p">5×7pol Retrato (127×178mm)</option>
+            <option value="5x7l">5×7pol Paisagem (178×127mm)</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="row"><label>Sangria</label><input type="number" id="inp-bleed" value="3" min="0" max="15" step="0.5"><span class="unit">mm</span></div>
+      <div class="row"><input type="checkbox" id="chk-bleed" checked><label for="chk-bleed" style="min-width:auto;cursor:pointer;font-size:12px">Guias de sangria</label></div>
+      <div class="row"><input type="checkbox" id="chk-marks" checked><label for="chk-marks" style="min-width:auto;cursor:pointer;font-size:12px">Marcas de corte</label></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="slabel">Tamanho da peça</div>
+    <div class="card">
+      <div class="row"><label>Predefinição</label>
+        <select id="sel-preset" style="flex:1">
+          <option value="">— personalizado —</option>
+          <optgroup label="Mini">
+            <option value="4.4|6.8">Mini European — 4,4×6,8cm</option>
+            <option value="4.1|6.3">Mini USA — 4,1×6,3cm</option>
+          </optgroup>
+          <optgroup label="Padrão">
+            <option value="5.9|9.2">Euro Standard — 5,9×9,2cm</option>
+            <option value="6.35|8.89" selected>Poker Size — 6,35×8,89cm</option>
+            <option value="5.72|8.89">Bridge Size — 5,72×8,89cm</option>
+          </optgroup>
+          <optgroup label="Grande">
+            <option value="7.0|12.0">Tarot Size — 7,0×12,0cm</option>
+            <option value="7.0|7.0">Large Square 70 — 7,0×7,0cm</option>
+            <option value="8.0|8.0">Large Square 80 — 8,0×8,0cm</option>
+            <option value="8.0|11.8">Gold / Vagantes — 8,0×11,8cm</option>
+            <option value="16.0|9.0">CHEFES — 16,0×9,0cm</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="row"><label>Largura</label><input type="number" id="inp-pw" value="6.35" min="0.5" max="30" step="0.01"><span class="unit">cm</span></div>
+      <div class="row"><label>Altura</label><input type="number" id="inp-ph" value="8.89" min="0.5" max="30" step="0.01"><span class="unit">cm</span></div>
+      <div class="row"><label>Gap</label><input type="number" id="inp-gap" value="2" min="0" max="20" step="0.5"><span class="unit">mm</span></div>
+      <div class="row"><input type="checkbox" id="chk-orient" checked><label for="chk-orient" style="min-width:auto;cursor:pointer;font-size:12px">Auto-girar pela orientação</label></div>
+      <div class="row"><input type="checkbox" id="chk-mixed"><label for="chk-mixed" style="min-width:auto;cursor:pointer;font-size:12px">Tamanhos mistos por imagem</label></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <div id="fit-badge" class="fit-badge">—</div>
+        <div id="pages-badge" class="pages-badge">— folhas</div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div class="slabel" style="margin-bottom:0">Imagens — arraste aqui ou na tela</div>
+      <button class="bdel" id="btn-clear-all" onclick="clearAllImages()" style="font-size:10px;padding:2px 8px;display:none">Apagar todas</button>
+    </div>
+    <div id="dropzone" onclick="document.getElementById('filein').click()">
+      <input type="file" id="filein" multiple accept="image/*,.pdf">
+      <span id="dz-icon">+</span>
+      <div id="dz-text">Arraste imagens ou PDFs<br><span style="font-size:10px;color:#bbb">PNG · JPG · WEBP · GIF · PDF</span></div>
+    </div>
+    <div id="img-list" style="margin-top:6px"></div>
+  </div>
+
+  <div>
+    <div class="slabel">Grid</div>
+    <div class="card">
+      <div class="row"><input type="checkbox" id="chk-auto" checked><label for="chk-auto" style="min-width:auto;cursor:pointer;font-size:12px">Auto-calcular grid</label></div>
+      <div class="row"><label>Colunas</label><input type="number" id="inp-cols" value="2" min="1" max="15"><span id="cols-src" class="unit">auto</span></div>
+      <div class="row"><label>Linhas</label><input type="number" id="inp-rows" value="3" min="1" max="30"><span id="rows-src" class="unit">auto</span></div>
+    </div>
+    <div style="display:flex;gap:5px;margin-top:7px">
+      <button class="bsm" style="flex:1" onclick="fillGrid()">Preencher</button>
+      <button class="bsm" style="flex:1" onclick="clearGrid()">Limpar</button>
+      <button class="bsm" style="flex:1" onclick="shuffleGrid()">Embaralhar</button>
+    </div>
+  </div>
+
+  <div>
+    <div class="slabel">Páginas</div>
+    <div class="card">
+      <div class="row"><label>Pág. ativa</label><select id="sel-page" style="flex:1"></select></div>
+      <div style="display:flex;gap:5px">
+        <button class="bsm" style="flex:1" onclick="addPage()">+ Página</button>
+        <button class="bsm" style="flex:1" onclick="removePage()">- Página</button>
+      </div>
+      <p style="font-size:10px;color:#aaa;line-height:1.5">Imagens além da capacidade de uma folha criam páginas automaticamente.</p>
+    </div>
+  </div>
+
+  <div>
+    <div class="slabel">Frente e Verso</div>
+    <div class="card">
+      <div class="row"><input type="checkbox" id="chk-duplex" onchange="toggleDuplex(this.checked)"><label for="chk-duplex" style="min-width:auto;cursor:pointer;font-size:12px;font-weight:600">Ativar frente e verso</label></div>
+      <div id="duplex-panel" style="display:none;flex-direction:column;gap:9px">
+        <p style="font-size:10px;color:#888;line-height:1.5">Adicione versos individualmente. Cada verso vai para a posição exata da carta de frente referenciada, já espelhado para impressão duplex.</p>
+
+        <!-- drop zone de verso individual -->
+        <div style="border:1.5px dashed #e08c5d;border-radius:8px;padding:9px;background:#fffaf6">
+          <div style="font-size:10px;font-weight:600;color:#c07040;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Adicionar carta verso</div>
+          <div id="back-dropzone"
+            onclick="document.getElementById('back-filein').click()"
+            style="border:1.5px dashed #ddd;border-radius:6px;padding:10px;text-align:center;cursor:pointer;background:#fff;transition:.15s">
+            <input type="file" id="back-filein" accept="image/*" multiple style="display:none">
+            <div style="font-size:18px;color:#ddd;margin-bottom:3px">↩</div>
+            <div style="font-size:11px;color:#bbb;line-height:1.4">Arraste ou clique para<br>adicionar versos das cartas</div>
+          </div>
+        </div>
+
+        <!-- lista de versos adicionados -->
+        <div id="back-cards-list"></div>
+
+        <div style="display:flex;gap:5px">
+          <button class="bsm" style="flex:1" onclick="addBackPage()">+ Par de páginas</button>
+        </div>
+        <div id="duplex-info" style="font-size:10px;color:#888;padding:6px 8px;background:#f8f8f8;border-radius:5px;line-height:1.6;display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="slabel">Extração de PDF</div>
+    <div class="card">
+      <div class="row"><label>Resolução</label>
+        <select id="sel-pdf-dpi">
+          <option value="300">300 dpi</option>
+          <option value="600" selected>600 dpi (alta)</option>
+          <option value="900">900 dpi (máxima)</option>
+          <option value="150">150 dpi (rápido)</option>
+        </select>
+      </div>
+      <div class="row"><label>Qualidade</label>
+        <select id="sel-pdf-qual">
+          <option value="0.85">Média (85%)</option>
+          <option value="0.95">Alta (95%)</option>
+          <option value="1" selected>Máxima (100%)</option>
+        </select>
+      </div>
+      <div class="row"><label>Sensibilidade</label>
+        <input type="range" id="rng-pdf-sens" min="0.3" max="1" step="0.1" value="0.7" style="flex:1">
+        <span id="sens-val" class="unit">0.7</span>
+      </div>
+      <p style="font-size:10px;color:#888;line-height:1.5;margin-top:6px">A ferramenta detecta automaticamente cartas em PDFs.</p>
+    </div>
+  </div>
+
+  <div>
+    <div class="slabel">Exportação CMYK</div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <span style="font-size:12px;color:#555">Modo de cor</span>
+        <div style="display:flex;gap:3px;align-items:center">
+          <span style="width:8px;height:8px;border-radius:50%;background:#00B0D8;display:inline-block"></span>
+          <span style="width:8px;height:8px;border-radius:50%;background:#D90082;display:inline-block"></span>
+          <span style="width:8px;height:8px;border-radius:50%;background:#FFD700;display:inline-block"></span>
+          <span style="width:8px;height:8px;border-radius:50%;background:#111;display:inline-block"></span>
+          <span style="font-size:10px;padding:1px 7px;border-radius:7px;background:#e6f1fb;color:#185FA5;font-weight:600;margin-left:3px">CMYK</span>
+        </div>
+      </div>
+      <div class="row"><label>Resolução</label>
+        <select id="sel-dpi">
+          <option value="300">300 dpi (padrão)</option>
+          <option value="600">600 dpi (alta)</option>
+          <option value="150">150 dpi (rascunho)</option>
+        </select>
+      </div>
+      <div class="row"><label>Qualidade</label>
+        <select id="sel-qual">
+          <option value="0.95">Alta (95%)</option>
+          <option value="1">Máxima (100%)</option>
+          <option value="0.85">Média (85%)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div id="panel-footer">
+  <button class="bmain cmyk-btn" onclick="exportCMYK()">Exportar CMYK — todas as folhas</button>
+  <button class="bmain" onclick="doPrint()">Imprimir (todas as folhas)</button>
+  <button class="bsec" onclick="copyConfig()">Copiar configuração</button>
+</div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="toolbar">
+    <span class="ti" id="tb-fmt">A4 Retrato</span>
+    <span class="dot">·</span>
+    <span class="ti" id="tb-grid">—</span>
+    <span class="dot">·</span>
+    <span class="ti" id="tb-filled">0/0</span>
+    <span class="dot">·</span>
+    <span class="ti" id="tb-pages">1 folha</span>
+    <div class="zctr">
+      <button onclick="adjZoom(-.1)">-</button>
+      <span id="tb-zoom">65%</span>
+      <button onclick="adjZoom(+.1)">+</button>
+      <button onclick="setZoom(.5)">50%</button>
+      <button onclick="setZoom(.65)">65%</button>
+      <button onclick="setZoom(1)">1:1</button>
+    </div>
+  </div>
+  <div id="canvas-wrap"></div>
+  <div id="infobar">
+    <span id="ib-sheet">—</span>
+    <span id="ib-piece">—</span>
+    <span id="ib-cells">—</span>
+    <span id="ib-imgs">Imagens: 0</span>
+    <span id="ib-dpi">300 dpi</span>
+    <span style="margin-left:auto;color:#444">PnP &amp; Past Up · CMYK Multi-Page</span>
+  </div>
+</div>
+</div>
+
+<div id="toast"></div>
+
+<div id="progress-overlay">
+  <div id="progress-box">
+    <h3 id="pt">Exportando CMYK...</h3>
+    <div id="pb-wrap"><div id="pb"></div></div>
+    <div id="pm">Preparando...</div>
+  </div>
+</div>
+
+<script>
+const PX_CM = 37.7953;
+const FMTS = {
+  a4p:{w:210,h:297,label:'A4 Retrato'},
+  a4l:{w:297,h:210,label:'A4 Paisagem'},
+  a3p:{w:297,h:420,label:'A3 Retrato'},
+  a3l:{w:420,h:297,label:'A3 Paisagem'},
+  a5p:{w:148,h:210,label:'A5 Retrato'},
+  a5l:{w:210,h:148,label:'A5 Paisagem'},
+  ltp:{w:216,h:279,label:'Letter Retrato'},
+  ltl:{w:279,h:216,label:'Letter Paisagem'},
+  lgp:{w:216,h:356,label:'Legal Retrato'},
+  lgl:{w:356,h:216,label:'Legal Paisagem'},
+  tbp:{w:279,h:432,label:'Tabloid Retrato'},
+  tbl:{w:432,h:279,label:'Tabloid Paisagem'},
+  '4x6p':{w:102,h:152,label:'4×6pol Retrato'},
+  '4x6l':{w:152,h:102,label:'4×6pol Paisagem'},
+  '5x7p':{w:127,h:178,label:'5×7pol Retrato'},
+  '5x7l':{w:178,h:127,label:'5×7pol Paisagem'},
+};
+
+let zoom = 0.65;
+let images = [];
+let pages = [[]];       /* pages[0,2,4...] = frentes; pages[1,3,5...] = versos se duplex */
+let backPages = [[]];   /* versos independentes quando duplex ativo */
+let currentPage = 0;
+let cfg = {
+  fmt:'a4p', bleedMM:3, showBleed:true, showMarks:true,
+  pieceW:6.35, pieceH:8.89, gapMM:2, autoOrient:true,
+  autoGrid:true, cols:2, rows:3,
+  dpi:300, quality:0.95,
+  duplex:false, defaultBackImg:null,
+  mixedSizes:false
+};
+
+let pdfConfig = {
+  dpi: 600,
+  quality: 1,
+  sensitivity: 0.7,
+  detectMode: 'auto'
+};
+
+const mm2px = mm => mm * PX_CM / 10;
+const cm2px = cm => cm * PX_CM;
+const $ = id => document.getElementById(id);
+
+function fmtDims(){ return FMTS[cfg.fmt]||FMTS.a4p; }
+
+function calcGrid(){
+  if(!cfg.autoGrid) return {cols:cfg.cols,rows:cfg.rows};
+  const {w,h}=fmtDims();
+  const usW=w-cfg.bleedMM*2, usH=h-cfg.bleedMM*2;
+  const pW=cfg.pieceW*10, pH=cfg.pieceH*10;
+  return {
+    cols:Math.max(1,Math.floor((usW+cfg.gapMM)/(pW+cfg.gapMM))),
+    rows:Math.max(1,Math.floor((usH+cfg.gapMM)/(pH+cfg.gapMM)))
+  };
+}
+
+function cap(){ const {cols,rows}=calcGrid(); return cols*rows; }
+
+function normPages(){
+  const c=cap();
+  pages.forEach(pg=>{ while(pg.length<c) pg.push(null); });
+  if(!pages.length) pages.push(new Array(c).fill(null));
+  if(cfg.duplex){
+    while(backPages.length<pages.length) backPages.push(new Array(c).fill(cfg.defaultBackImg));
+    backPages.forEach(pg=>{ while(pg.length<c) pg.push(cfg.defaultBackImg); });
+  }
+}
+
+function autoInsert(imgObj){
+  normPages();
+  const c=cap();
+  for(let p=0;p<pages.length;p++){
+    for(let i=0;i<c;i++){
+      if(!pages[p][i]){ pages[p][i]=imgObj; return; }
+    }
+  }
+  const np=new Array(c).fill(null);
+  np[0]=imgObj;
+  pages.push(np);
+}
+
+/* ── RENDER ─────────────────────────────────────────── */
+function render(){
+  normPages();
+  const {cols,rows}=calcGrid();
+  $('inp-cols').value=cols; $('inp-rows').value=rows;
+  $('cols-src').textContent=cfg.autoGrid?'auto':'manual';
+  $('rows-src').textContent=cfg.autoGrid?'auto':'manual';
+
+  const wrap=$('canvas-wrap');
+  wrap.innerHTML='';
+
+  const {w:wMM,h:hMM}=fmtDims();
+  const wPx=mm2px(wMM), hPx=mm2px(hMM);
+
+  const totalPairs = cfg.duplex ? Math.max(pages.length, backPages.length) : pages.length;
+
+  for(let pi=0; pi < (cfg.duplex ? totalPairs : pages.length); pi++){
+    /* ── FRENTE ── */
+    const fpg = pages[pi] || new Array(cap()).fill(null);
+    const fGroup = document.createElement('div');
+    fGroup.style.cssText='display:flex;flex-direction:row;gap:14px;align-items:flex-end;';
+
+    {
+      const sw=document.createElement('div'); sw.className='sheet-wrap';
+      const lbl=document.createElement('div');
+      const isActive=(pi===currentPage&&!cfg._viewingBack);
+      lbl.className='sheet-label'+(isActive?' active-lbl':'')+(cfg.duplex?' front-lbl':'');
+      lbl.textContent=cfg.duplex?`FRENTE ${pi+1}`:`FOLHA ${pi+1} DE ${pages.length}`;
+      sw.appendChild(lbl);
+      const outer=document.createElement('div');
+      outer.className='sheet-outer'+(isActive?' active-sheet':'');
+      outer.style.width=(wPx*zoom)+'px'; outer.style.height=(hPx*zoom)+'px';
+      outer.addEventListener('click',ev=>{
+        if(ev.target===outer){currentPage=pi;cfg._viewingBack=false;render();}
+      });
+      const inner=buildSheet(fpg,cols,rows,pi,wPx,hPx,false);
+      outer.appendChild(inner); sw.appendChild(outer); fGroup.appendChild(sw);
+    }
+
+    /* ── VERSO (se duplex) ── */
+    if(cfg.duplex){
+      const bpg = backPages[pi] || new Array(cap()).fill(cfg.defaultBackImg);
+      const sw=document.createElement('div'); sw.className='sheet-wrap';
+      const lbl=document.createElement('div');
+      const isActive=(pi===currentPage&&cfg._viewingBack);
+      lbl.className='sheet-label back-lbl'+(isActive?' active-lbl':'');
+      lbl.textContent=`VERSO ${pi+1} — colunas invertidas`;
+      sw.appendChild(lbl);
+      const outer=document.createElement('div');
+      outer.className='sheet-outer back-sheet'+(isActive?' active-sheet':'');
+      outer.style.width=(wPx*zoom)+'px'; outer.style.height=(hPx*zoom)+'px';
+      outer.addEventListener('click',ev=>{
+        if(ev.target===outer){currentPage=pi;cfg._viewingBack=true;render();}
+      });
+      const inner=buildSheet(bpg,cols,rows,pi,wPx,hPx,true);
+      outer.appendChild(inner); sw.appendChild(outer); fGroup.appendChild(sw);
+    }
+
+    wrap.appendChild(fGroup);
+  }
+
+  if(!cfg.duplex && pages.length===0) wrap.innerHTML='';
+  updateUI(cols,rows);
+  updatePageSel();
+  updateDuplexInfo();
+  renderBackCardsList();
+}
+
+
+/* ── SHELF PACKING para tamanhos mistos ── */
+function shelfLayout(pg, wPx, hPx, bleedPx, gapPx, mirror){
+  const placed=[];
+  const usableW=wPx-bleedPx*2;
+  const usableH=hPx-bleedPx*2;
+  let shelfX=bleedPx, shelfY=bleedPx, shelfH=0;
+
+  pg.forEach((imgObj)=>{
+    if(!imgObj) return;
+    const iw=cm2px(imgObj.wCm||cfg.pieceW);
+    const ih=cm2px(imgObj.hCm||cfg.pieceH);
+    if(shelfX+iw>wPx-bleedPx){
+      /* nova prateleira */
+      shelfX=bleedPx;
+      shelfY+=shelfH+gapPx;
+      shelfH=0;
+    }
+    if(shelfY+ih>hPx-bleedPx) return; /* não cabe */
+    const x = mirror ? (wPx - shelfX - iw) : shelfX;
+    placed.push({imgObj,x,y:shelfY,w:iw,h:ih});
+    shelfX+=iw+gapPx;
+    if(ih>shelfH) shelfH=ih;
+  });
+  return placed;
+}
+
+function addBleedToSheet(inner,wPx,hPx,bleedPx){
+  if(!cfg.showBleed||!cfg.bleedMM) return;
+  const B=bleedPx, arm=Math.max(B*2.5,10), sw=1.2;
+  const corners=[
+    {pts:`M0,${arm} L0,0 L${arm},0`},
+    {pts:`M${wPx-arm},0 L${wPx},0 L${wPx},${arm}`},
+    {pts:`M0,${hPx-arm} L0,${hPx} L${arm},${hPx}`},
+    {pts:`M${wPx-arm},${hPx} L${wPx},${hPx} L${wPx},${hPx-arm}`},
+  ];
+  const d=document.createElement('div');
+  d.className='bleed-corner';
+  d.style.cssText='position:absolute;inset:0;pointer-events:none;z-index:10;';
+  let svgContent=corners.map(({pts})=>`<path d="${pts}" fill="none" stroke="rgba(220,30,30,.75)" stroke-width="${sw}"/>`).join('');
+  svgContent+=`<rect x="${B}" y="${B}" width="${wPx-B*2}" height="${hPx-B*2}" fill="none" stroke="rgba(220,30,30,.2)" stroke-width="0.5" stroke-dasharray="4,3"/>`;
+  d.innerHTML=`<svg width="${wPx}" height="${hPx}" style="position:absolute;top:0;left:0;overflow:visible;" xmlns="http://www.w3.org/2000/svg">${svgContent}</svg>`;
+  inner.appendChild(d);
+}
+
+function buildSheet(pg,cols,rows,pi,wPx,hPx,mirror=false){
+  const bleedPx=mm2px(cfg.bleedMM);
+  const gapPx=mm2px(cfg.gapMM);
+  const pW=cm2px(cfg.pieceW), pH=cm2px(cfg.pieceH);
+
+  const inner=document.createElement('div');
+  inner.className='sheet-inner';
+  inner.style.width=wPx+'px';
+  inner.style.height=hPx+'px';
+  inner.style.transform=`scale(${zoom})`;
+  inner.style.transformOrigin='0 0';
+
+  /* ── tamanhos mistos: layout shelf packing em vez de grid uniforme ── */
+  if(cfg.mixedSizes){
+    const placed=shelfLayout(pg, wPx, hPx, bleedPx, gapPx, mirror);
+    placed.forEach(({imgObj,x,y,w,h},idx)=>{
+      const cell=document.createElement('div');
+      cell.className='cell';
+      cell.style.cssText=`left:${x}px;top:${y}px;width:${w}px;height:${h}px;`;
+      if(imgObj){
+        const im=document.createElement('img');
+        im.src=imgObj.src; im.className='cell-img';
+        cell.appendChild(im);
+        if(cfg.showMarks) addCutMarks(cell,w,h);
+      } else {
+        const emp=document.createElement('div');
+        emp.className='cell-empty';
+        emp.innerHTML=`<span>${(imgObj===undefined?'':'vazio')}</span>`;
+        cell.appendChild(emp);
+      }
+      const ov=document.createElement('div');
+      ov.className='cell-ov';
+      const realIdx=pg.indexOf(imgObj);
+      ov.innerHTML=`<button onclick="cellDup(${pi},${realIdx<0?idx:realIdx},event)">Dup</button><button class="rd" onclick="cellClear(${pi},${realIdx<0?idx:realIdx},event)">Limpar</button>`;
+      cell.appendChild(ov);
+      inner.appendChild(cell);
+    });
+    /* bleed e retorno antecipado */
+
+    /* bleed no modo misto */
+    addBleedToSheet(inner,wPx,hPx,bleedPx);
+    return inner;
+  }
+
+  if(cfg.showBleed&&cfg.bleedMM>0){
+    const B=bleedPx, arm=Math.max(B*2.5,10), sw=1.2;
+    const corners=[
+      {x:0,   y:0,   pts:`M0,${arm} L0,0 L${arm},0`},
+      {x:wPx, y:0,   pts:`M${wPx-arm},0 L${wPx},0 L${wPx},${arm}`},
+      {x:0,   y:hPx, pts:`M0,${hPx-arm} L0,${hPx} L${arm},${hPx}`},
+      {x:wPx, y:hPx, pts:`M${wPx-arm},${hPx} L${wPx},${hPx} L${wPx},${hPx-arm}`},
+    ];
+    corners.forEach(({pts})=>{
+      const d=document.createElement('div');
+      d.className='bleed-corner';
+      d.style.cssText='position:absolute;inset:0;pointer-events:none;z-index:10;';
+      d.innerHTML=`<svg width="${wPx}" height="${hPx}" style="position:absolute;top:0;left:0;overflow:visible;" xmlns="http://www.w3.org/2000/svg"><path d="${pts}" fill="none" stroke="rgba(220,30,30,.75)" stroke-width="${sw}"/></svg>`;
+      inner.appendChild(d);
+    });
+    /* linha de sangria tracejada */
+    const sd=document.createElement('div');
+    sd.className='bleed-corner';
+    sd.style.cssText='position:absolute;inset:0;pointer-events:none;z-index:9;';
+    sd.innerHTML=`<svg width="${wPx}" height="${hPx}" style="position:absolute;top:0;left:0;" xmlns="http://www.w3.org/2000/svg"><rect x="${B}" y="${B}" width="${wPx-B*2}" height="${hPx-B*2}" fill="none" stroke="rgba(220,30,30,.2)" stroke-width="0.5" stroke-dasharray="4,3"/></svg>`;
+    inner.appendChild(sd);
+  }
+
+  const totalW=cols*pW+(cols-1)*gapPx;
+  const totalH=rows*pH+(rows-1)*gapPx;
+  const ox=(wPx-totalW)/2, oy=(hPx-totalH)/2;
+
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const idx=r*cols+c;
+      /* mirror: coluna invertida para alinhar com frente ao virar o papel */
+      const renderCol = mirror ? (cols - 1 - c) : c;
+      const x=ox+renderCol*(pW+gapPx), y=oy+r*(pH+gapPx);
+      const cell=document.createElement('div');
+      cell.className='cell';
+      cell.style.cssText=`left:${x}px;top:${y}px;width:${pW}px;height:${pH}px;`;
+
+      const imgObj=pg[idx];
+      if(imgObj){
+        const im=document.createElement('img');
+        im.src=imgObj.src; im.className='cell-img';
+        cell.appendChild(im);
+        if(cfg.showMarks) addCutMarks(cell,pW,pH);
+      } else {
+        const emp=document.createElement('div');
+        emp.className='cell-empty';
+        emp.innerHTML='<span>vazio</span>';
+        cell.appendChild(emp);
+      }
+
+      const ov=document.createElement('div');
+      ov.className='cell-ov';
+      ov.innerHTML=`<button onclick="cellDup(${pi},${idx},event)">Dup</button><button class="rd" onclick="cellClear(${pi},${idx},event)">Limpar</button>`;
+      cell.appendChild(ov);
+      inner.appendChild(cell);
+    }
+  }
+  return inner;
+}
+
+function addCutMarks(cell,w,h){
+  const len=8,gap=3;
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('width',w); svg.setAttribute('height',h);
+  svg.style.cssText='position:absolute;inset:0;overflow:visible;pointer-events:none;';
+  const segs=[[0,-(gap+len),0,-gap],[-(gap+len),0,-gap,0],[w,-(gap+len),w,-gap],[w+gap,0,w+gap+len,0],[0,h+gap,0,h+gap+len],[-(gap+len),h,-gap,h],[w,h+gap,w,h+gap+len],[w+gap,h,w+gap+len,h]];
+  segs.forEach(([x1,y1,x2,y2])=>{
+    const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+    l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);
+    l.setAttribute('stroke','#000');l.setAttribute('stroke-width','0.5');
+    svg.appendChild(l);
+  });
+  cell.appendChild(svg);
+}
+
+function updateUI(cols,rows){
+  const {w,h,label}=fmtDims();
+  const c=cols*rows;
+  const total=c*pages.length;
+  const filled=pages.reduce((s,pg)=>s+pg.slice(0,c).filter(Boolean).length,0);
+
+  $('tb-fmt').textContent=label;
+  $('tb-grid').textContent=`${cols}x${rows} = ${c}/folha`;
+  $('tb-filled').textContent=`${filled}/${total} preenchidas`;
+  $('tb-pages').textContent=`${pages.length} folha${pages.length>1?'s':''}`;
+  $('tb-zoom').textContent=Math.round(zoom*100)+'%';
+
+  $('fit-badge').textContent=`${cols}x${rows} = ${c} pecas/folha`;
+  const pb=$('pages-badge');
+  if(pages.length>1){pb.style.display='';pb.textContent=`${pages.length} folhas`;}
+  else pb.style.display='none';
+
+  $('ib-sheet').textContent=`${w}x${h}mm`;
+  $('ib-piece').textContent=`Peca: ${cfg.pieceW}x${cfg.pieceH}cm`;
+  $('ib-cells').textContent=`${filled}/${total} celulas`;
+  $('ib-imgs').textContent=`${images.length} imagens`;
+  $('ib-dpi').textContent=cfg.dpi+' dpi';
+}
+
+function updatePageSel(){
+  const sel=$('sel-page');
+  sel.innerHTML='';
+  pages.forEach((_,i)=>{
+    const o=document.createElement('option');
+    o.value=i; o.textContent=`Folha ${i+1}`;
+    if(i===currentPage) o.selected=true;
+    sel.appendChild(o);
+  });
+}
+
+/* ── CELL ACTIONS ───────────────────────────────────── */
+function cellInsert(pi,idx,e){
+  if(e)e.stopPropagation();
+  if(!images.length){$('filein').click();return;}
+  if(cfg._viewingBack){ backPages[pi][idx]=images[idx%images.length]; }
+  else { pages[pi][idx]=images[idx%images.length]; }
+  render();renderImgList();
+}
+
+function cellDup(pi,idx,e){
+  if(e)e.stopPropagation();
+  const src=pages[pi][idx]; if(!src)return;
+  const c=cap();
+  for(let p=0;p<pages.length;p++){
+    for(let i=0;i<c;i++){
+      if(!pages[p][i]){pages[p][i]=src;render();renderImgList();return;}
+    }
+  }
+  const np=new Array(c).fill(null); np[0]=src;
+  pages.push(np); render(); renderImgList();
+  toast('Nova folha criada automaticamente');
+}
+
+function cellClear(pi,idx,e){
+  if(e)e.stopPropagation();
+  if(cfg._viewingBack){ backPages[pi][idx]=null; }
+  else { pages[pi][idx]=null; }
+  render();renderImgList();
+}
+
+function fillGrid(){
+  if(!images.length){toast('Adicione imagens primeiro');return;}
+  const c=cap();
+  pages.forEach((pg,pi)=>{for(let i=0;i<c;i++) pg[i]=images[i%images.length];});
+  render();renderImgList();
+}
+
+function clearGrid(){
+  pages.forEach(pg=>{for(let i=0;i<pg.length;i++) pg[i]=null;});
+  render();renderImgList();
+}
+
+function shuffleGrid(){
+  if(!images.length){toast('Adicione imagens primeiro');return;}
+  const c=cap();
+  pages.forEach(pg=>{for(let i=0;i<c;i++) pg[i]=images[Math.floor(Math.random()*images.length)];});
+  render();renderImgList();
+}
+
+function addPage(){
+  const c=cap();
+  pages.push(new Array(c).fill(null));
+  currentPage=pages.length-1;
+  render(); toast(`Folha ${pages.length} adicionada`);
+}
+
+function removePage(){
+  if(pages.length<=1){toast('Precisa ter pelo menos uma folha');return;}
+  pages.splice(currentPage,1);
+  currentPage=Math.min(currentPage,pages.length-1);
+  render(); toast('Folha removida');
+}
+
+$('sel-page').addEventListener('change',e=>{currentPage=parseInt(e.target.value);render();});
+
+function adjZoom(d){zoom=Math.max(.15,Math.min(2,zoom+d));render();}
+function setZoom(v){zoom=v;render();}
+
+function toast(msg,dur=2600){
+  const t=$('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+function showProgress(title='Processando...', message=''){
+  const po=$('progress-overlay');
+  po.classList.add('show');
+  $('pt').textContent=title;
+  $('pm').textContent=message;
+}
+
+function updateProgress(percent, message){
+  $('pb').style.width=percent+'%';
+  $('pm').textContent=message;
+}
+
+function hideProgress(){
+  $('progress-overlay').classList.remove('show');
+}
+
+/* ── FILE HANDLING ──────────────────────────────────── */
+
+/* Rotaciona imagem 90 graus via canvas se orientação não bater com a peça */
+function orientImage(src, natW, natH){
+  return new Promise(res=>{
+    const pieceIsPortrait = cfg.pieceH >= cfg.pieceW;
+    const imgIsPortrait   = natH >= natW;
+    if(!cfg.autoOrient || pieceIsPortrait===imgIsPortrait){ res(src); return; }
+    const img=new Image();
+    img.onload=()=>{
+      const cv=document.createElement('canvas');
+      cv.width=natH; cv.height=natW; /* swap */
+      const ctx=cv.getContext('2d');
+      ctx.translate(natH/2, natW/2);
+      ctx.rotate(Math.PI/2);
+      ctx.drawImage(img, -natW/2, -natH/2);
+      res(cv.toDataURL('image/jpeg',0.98));
+    };
+    img.src=src;
+  });
+}
+
+function handleFiles(files){
+  const imageFiles=[...files].filter(f=>f.type.startsWith('image/'));
+  const pdfFiles=[...files].filter(f=>f.type==='application/pdf');
+
+  if(imageFiles.length) handleImageFiles(imageFiles);
+  if(pdfFiles.length) handlePdfFiles(pdfFiles);
+}
+
+function handleImageFiles(files){
+  const arr=[...files];
+  if(!arr.length)return;
+  let loaded=0;
+  arr.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      const img=new Image();
+      img.onload=async()=>{
+        const finalSrc=await orientImage(ev.target.result, img.naturalWidth, img.naturalHeight);
+        /* recalcular dimensões reais após possível rotação */
+        const rotated=(cfg.autoOrient && (cfg.pieceH>=cfg.pieceW) !== (img.naturalHeight>=img.naturalWidth));
+        const obj={
+          src:finalSrc,
+          name:file.name,
+          natW:rotated?img.naturalHeight:img.naturalWidth,
+          natH:rotated?img.naturalWidth:img.naturalHeight,
+          wCm:cfg.pieceW,   /* tamanho no momento do upload */
+          hCm:cfg.pieceH
+        };
+        images.push(obj);
+        autoInsert(obj);
+        loaded++;
+        if(loaded===arr.length){
+          renderImgList();render();updateBackImgSelect();
+          $('btn-clear-all').style.display=images.length?'':'none';
+          toast(`${arr.length} imagem${arr.length>1?'ns':''} adicionada${arr.length>1?'s':''}`);
+        }
+      };
+      img.src=ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function clearAllImages(){
+  if(!images.length)return;
+  if(!confirm('Apagar todas as '+images.length+' imagens e limpar o grid?'))return;
+  images=[];
+  pages.forEach(pg=>{for(let i=0;i<pg.length;i++) pg[i]=null;});
+  $('btn-clear-all').style.display='none';
+  renderImgList();render();
+  toast('Todas as imagens removidas');
+}
+
+function renderImgList(){
+  const el=$('img-list');
+  el.innerHTML='';
+  const c=cap();
+  images.forEach((img,i)=>{
+    const count=pages.reduce((s,pg)=>s+pg.slice(0,c).filter(x=>x&&x===img).length,0);
+    const div=document.createElement('div');
+    div.className='ii';
+    div.innerHTML=`<img src="${img.src}" class="ithumb"><div class="iinfo"><div class="iname">${img.name}</div><div class="idim">${img.natW}x${img.natH}px</div></div>${count?`<span class="icnt">${count}x</span>`:''}<button class="bdel" onclick="removeImg(${i})">x</button>`;
+    el.appendChild(div);
+  });
+}
+
+function removeImg(i){
+  const img=images[i];
+  images.splice(i,1);
+  pages.forEach(pg=>{for(let j=0;j<pg.length;j++) if(pg[j]===img) pg[j]=null;});
+  $('btn-clear-all').style.display=images.length?'':'none';
+  renderImgList();render();updateBackImgSelect();
+}
+
+/* ── PDF PROCESSING ────────────────────────────────── */
+
+async function handlePdfFiles(pdfFiles){
+  showProgress('Extraindo cartas do PDF...', 'Carregando...');
+  let totalExtracted=0;
+
+  for(let pdfFile of pdfFiles){
+    try{
+      updateProgress(10, `Carregando PDF: ${pdfFile.name}...`);
+      const pagesCanvases=await loadPdf(pdfFile);
+
+      for(let pageNum=0; pageNum<pagesCanvases.length; pageNum++){
+        updateProgress(Math.round(20+(pageNum/pagesCanvases.length)*60), `Detectando cartas na página ${pageNum+1}/${pagesCanvases.length}...`);
+        await new Promise(r=>setTimeout(r,10));
+
+        try{
+          const cartas=await detectarCartas(pagesCanvases[pageNum], pdfConfig.sensitivity);
+          const extractedImgs=await extrairCartasDoCanvas(pagesCanvases[pageNum], cartas, pdfConfig);
+
+          for(let imgObj of extractedImgs){
+            imgObj.source='pdf';
+            imgObj.pdfFile=pdfFile.name;
+            imgObj.pdfPage=pageNum+1;
+            images.push(imgObj);
+            autoInsert(imgObj);
+            totalExtracted++;
+          }
+        }catch(e){
+          console.error(`Erro ao detectar cartas na página ${pageNum+1}:`, e);
+        }
+      }
+    }catch(e){
+      toast(`Erro ao processar ${pdfFile.name}: ${e.message}`);
+      console.error(e);
+    }
+  }
+
+  hideProgress();
+  renderImgList();render();
+  if(totalExtracted>0){
+    toast(`${totalExtracted} carta${totalExtracted>1?'s':''} extraída${totalExtracted>1?'s':''} do PDF ✓`);
+  }else{
+    toast('Nenhuma carta detectada. Tente ajustar a sensibilidade.');
+  }
+}
+
+async function loadPdf(file){
+  return new Promise(async(resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=async(e)=>{
+      try{
+        const pdf=await pdfjsLib.getDocument({data:e.target.result}).promise;
+        const canvases=[];
+
+        for(let pageNum=1; pageNum<=pdf.numPages; pageNum++){
+          const page=await pdf.getPage(pageNum);
+          const dpi=pdfConfig.dpi||600;
+          const scale=dpi/72; // PDF usa 72 DPI como base
+          const viewport=page.getViewport({scale});
+
+          const canvas=document.createElement('canvas');
+          canvas.width=Math.round(viewport.width);
+          canvas.height=Math.round(viewport.height);
+
+          const ctx=canvas.getContext('2d');
+          await page.render({canvasContext:ctx, viewport}).promise;
+          canvases.push(canvas);
+        }
+        resolve(canvases);
+      }catch(err){
+        reject(err);
+      }
+    };
+    reader.onerror=e=>reject(new Error('Erro ao ler arquivo PDF'));
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+async function detectarCartas(pageCanvas, sensitivity){
+  console.log('🔍 Iniciando detecção de cartas...');
+  console.log(`Dimensões canvas: ${pageCanvas.width}x${pageCanvas.height}`);
+
+  const cvWork=document.createElement('canvas');
+  cvWork.width=pageCanvas.width;
+  cvWork.height=pageCanvas.height;
+  const ctx=cvWork.getContext('2d');
+  ctx.drawImage(pageCanvas,0,0);
+
+  let contours=[];
+  const minSize=Math.round(cvWork.width*0.04);
+  const maxSize=Math.round(cvWork.width*0.96);
+
+  /* Estratégia 1: Detecção por mudanças de cor (rápido) */
+  console.log('→ Tentando detecção por mudanças de cor...');
+  const colorData=ctx.getImageData(0,0,cvWork.width,cvWork.height);
+  contours=detectCartasPorTransicao(colorData, cvWork.width, cvWork.height, minSize, maxSize);
+  contours=contours.filter(c=>temConteudoVisual(colorData, cvWork.width, c));
+
+  if(contours.length>0){
+    console.log(`✓ Detectadas ${contours.length} cartas por transição de cor!`);
+    return sortContoursByPosition(contours);
+  }
+
+  /* Estratégia 2: Grid automático 3x3 (fallback, mais confiável) */
+  console.log('→ Usando grid automático 3x3...');
+  contours=detectCartasEmGrid(pageCanvas, minSize, maxSize);
+  console.log(`✓ Fallback: ${contours.length} cartas em grid`);
+
+  return sortContoursByPosition(contours);
+}
+
+function detectCartasPorTransicao(imgData, width, height, minSize, maxSize){
+  /* Detectar bordas procurando por mudanças abruptas de cor */
+  const data=imgData.data;
+  const edgeMap=new Uint8Array(width*height);
+
+  /* Detectar transições horizontais e verticais (com threshold mais alto) */
+  for(let y=2;y<height-2;y++){
+    for(let x=2;x<width-2;x++){
+      const idx=(y*width+x)*4;
+      const left=(data[idx-8]+data[idx-7]+data[idx-6])/3;
+      const right=(data[idx+8]+data[idx+9]+data[idx+10])/3;
+      const top=(data[(idx-width*8)]+data[(idx-width*8+1)]+data[(idx-width*8+2)])/3;
+      const bottom=(data[(idx+width*8)]+data[(idx+width*8+1)]+data[(idx+width*8+2)])/3;
+
+      const horz=Math.abs(right-left);
+      const vert=Math.abs(bottom-top);
+      const edge=Math.max(horz,vert);
+
+      /* Threshold mais alto para evitar pequenos detalhes */
+      edgeMap[y*width+x]=edge>60?255:0;
+    }
+  }
+
+  /* Encontrar contornos nas bordas */
+  const visited=new Uint8Array(width*height);
+  const contours=[];
+
+  for(let i=0;i<width*height;i++){
+    if(!visited[i]&&edgeMap[i]>128){
+      const contour=floodFillBinary(edgeMap,visited,i%width,Math.floor(i/width),width,height);
+      if(contour.points&&contour.points.length>50) contours.push(contour);
+    }
+  }
+
+  return contours.filter(c=>validateContour(c,minSize,maxSize));
+}
+
+function temConteudoVisual(imgData, width, contour){
+  /* Verificar se a região tem conteúdo (não é só branco/vazio) */
+  const data=imgData.data;
+  let darkPixels=0;
+  let totalPixels=0;
+
+  const x1=Math.max(0,Math.round(contour.x));
+  const y1=Math.max(0,Math.round(contour.y));
+  const x2=Math.min(width,Math.round(contour.x+contour.w));
+  const y2=Math.min(Math.round(imgData.height),Math.round(contour.y+contour.h));
+
+  for(let y=y1;y<y2;y+=2){
+    for(let x=x1;x<x2;x+=2){
+      const idx=(y*width+x)*4;
+      const brightness=(data[idx]+data[idx+1]+data[idx+2])/3;
+      if(brightness<200) darkPixels++;
+      totalPixels++;
+    }
+  }
+
+  /* Precisa ter pelo menos 20% de pixels escuros */
+  const percentDark=darkPixels/totalPixels;
+  return percentDark>0.2;
+}
+
+function floodFillBinary(edgeMap, visited, startX, startY, width, height){
+  const queue=[[startX,startY]];
+  const points=[];
+
+  while(queue.length>0){
+    const [x,y]=queue.shift();
+    const idx=y*width+x;
+
+    if(x<0||x>=width||y<0||y>=height||visited[idx]||edgeMap[idx]<128) continue;
+
+    visited[idx]=1;
+    points.push({x,y});
+    queue.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
+  }
+
+  if(points.length===0) return {points:[],x:0,y:0,w:0,h:0};
+  const xs=points.map(p=>p.x);
+  const ys=points.map(p=>p.y);
+  const minX=Math.min(...xs), maxX=Math.max(...xs);
+  const minY=Math.min(...ys), maxY=Math.max(...ys);
+  return{points,x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1};
+}
+
+function sobelEdgeDetection(canvas){
+  const ctx=canvas.getContext('2d');
+  const imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
+  const data=imgData.data;
+  const width=imgData.width;
+  const height=imgData.height;
+
+  const edges=ctx.createImageData(width,height);
+  const out=edges.data;
+
+  const sobX=[[-1,0,1],[-2,0,2],[-1,0,1]];
+  const sobY=[[-1,-2,-1],[0,0,0],[1,2,1]];
+
+  for(let y=1;y<height-1;y++){
+    for(let x=1;x<width-1;x++){
+      let gx=0,gy=0;
+
+      for(let dy=-1;dy<=1;dy++){
+        for(let dx=-1;dx<=1;dx++){
+          const idx=((y+dy)*width+(x+dx))*4;
+          const pix=data[idx];
+          gx+=pix*sobX[dy+1][dx+1];
+          gy+=pix*sobY[dy+1][dx+1];
+        }
+      }
+
+      const mag=Math.sqrt(gx*gx+gy*gy);
+      const outIdx=(y*width+x)*4;
+      out[outIdx]=Math.min(255,mag);
+      out[outIdx+3]=255;
+    }
+  }
+
+  return edges;
+}
+
+function findContours(imgData, width, height){
+  const data=imgData.data;
+  const visited=new Uint8Array(width*height);
+  const contours=[];
+
+  for(let i=0;i<width*height;i++){
+    if(!visited[i]&&data[i*4]>128){
+      const contour=floodFill(data,visited,i%width,Math.floor(i/width),width,height);
+      if(contour.points.length>4) contours.push(contour);
+    }
+  }
+
+  return contours;
+}
+
+function floodFill(data, visited, startX, startY, width, height){
+  const queue=[[startX,startY]];
+  const points=[];
+
+  while(queue.length>0){
+    const [x,y]=queue.shift();
+    const idx=y*width+x;
+
+    if(x<0||x>=width||y<0||y>=height||visited[idx]||data[idx*4]<128) continue;
+
+    visited[idx]=1;
+    points.push({x,y});
+
+    queue.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
+  }
+
+  if(points.length===0) return {points:[],x:0,y:0,w:0,h:0};
+  const xs=points.map(p=>p.x);
+  const ys=points.map(p=>p.y);
+  const minX=Math.min(...xs);
+  const maxX=Math.max(...xs);
+  const minY=Math.min(...ys);
+  const maxY=Math.max(...ys);
+
+  return{points,x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1};
+}
+
+function validateContour(c, minSize, maxSize){
+  /* Validar tamanho com margem maior */
+  const strictMin=minSize*1.2;
+  const strictMax=maxSize*0.9;
+  if(c.w<strictMin||c.w>strictMax||c.h<strictMin||c.h>strictMax) return false;
+
+  /* Validar aspecto ratio (cartas são paisagem: ~0.65-0.85) */
+  const ratio=c.w/c.h;
+  if(ratio<0.65||ratio>0.85) return false;
+
+  /* Validar área mínima com margem */
+  const area=c.w*c.h;
+  const minArea=strictMin*strictMin*2;
+  if(area<minArea) return false;
+
+  /* Validar se é quadrado demais (evita detectar apenas bordas) */
+  const aspectDiff=Math.abs(c.w-c.h);
+  const avgSize=(c.w+c.h)/2;
+  if(aspectDiff/avgSize<0.15) return false;
+
+  return true;
+}
+
+function sortContoursByPosition(contours){
+  return contours.sort((a,b)=>a.y!==b.y?a.y-b.y:a.x-b.x);
+}
+
+function dilateBinary(imgData, width, height, iterations){
+  const data=imgData.data;
+  for(let iter=0;iter<iterations;iter++){
+    const temp=new Uint8ClampedArray(data);
+    for(let y=1;y<height-1;y++){
+      for(let x=1;x<width-1;x++){
+        const idx=(y*width+x)*4;
+        if(temp[idx]>128){
+          for(let dy=-1;dy<=1;dy++){
+            for(let dx=-1;dx<=1;dx++){
+              const nidx=((y+dy)*width+(x+dx))*4;
+              data[nidx]=255;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+function detectCartasPorCor(imgData, width, height, minSize, maxSize){
+  /* Detectar regiões com cores douradas/escuras (bordas das cartas) */
+  const data=imgData.data;
+  const visited=new Uint8Array(width*height);
+  const contours=[];
+
+  for(let i=0;i<width*height;i++){
+    if(visited[i]) continue;
+    const r=data[i*4], g=data[i*4+1], b=data[i*4+2];
+
+    /* Detectar pixels que fazem parte de bordas (escuro ou dourado) */
+    const brightness=(r+g+b)/3;
+    const saturation=Math.max(r,g,b)-Math.min(r,g,b);
+    const isDarkBorder=brightness<100;
+    const isGoldBorder=(r>150&&g>100&&b<100&&saturation>50);
+
+    if(!isDarkBorder&&!isGoldBorder) continue;
+
+    const contour=floodFillColor(data,visited,i%width,Math.floor(i/width),width,height);
+    if(contour.points.length>20) contours.push(contour);
+  }
+
+  return contours.filter(c=>validateContour(c,minSize,maxSize));
+}
+
+function floodFillColor(data, visited, startX, startY, width, height){
+  const queue=[[startX,startY]];
+  const points=[];
+  const refR=data[(startY*width+startX)*4];
+  const refG=data[(startY*width+startX)*4+1];
+  const refB=data[(startY*width+startX)*4+2];
+
+  while(queue.length>0){
+    const [x,y]=queue.shift();
+    const idx=y*width+x;
+
+    if(x<0||x>=width||y<0||y>=height||visited[idx]) continue;
+
+    const r=data[idx*4], g=data[idx*4+1], b=data[idx*4+2];
+    const dist=Math.abs(r-refR)+Math.abs(g-refG)+Math.abs(b-refB);
+    if(dist>80) continue;
+
+    visited[idx]=1;
+    points.push({x,y});
+    queue.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
+  }
+
+  if(points.length===0) return {points:[],x:0,y:0,w:0,h:0};
+  const xs=points.map(p=>p.x);
+  const ys=points.map(p=>p.y);
+  const minX=Math.min(...xs), maxX=Math.max(...xs);
+  const minY=Math.min(...ys), maxY=Math.max(...ys);
+  return{points,x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1};
+}
+
+function detectGridCompacto(pageCanvas, minSize, maxSize){
+  /* Detectar linhas verticais e horizontais para encontrar grid */
+  const ctx=pageCanvas.getContext('2d');
+  const imgData=ctx.getImageData(0,0,pageCanvas.width,pageCanvas.height);
+  const data=imgData.data;
+  const width=pageCanvas.width, height=pageCanvas.height;
+
+  /* Encontrar linhas por mudanças de cor abruptas */
+  const vLines=[], hLines=[];
+
+  /* Linhas verticais */
+  for(let x=5;x<width-5;x+=2){
+    let darkPixels=0;
+    for(let y=0;y<height;y+=2){
+      const idx=(y*width+x)*4;
+      const brightness=(data[idx]+data[idx+1]+data[idx+2])/3;
+      if(brightness<110) darkPixels++;
+    }
+    if(darkPixels/height>0.35) vLines.push(x);
+  }
+
+  /* Linhas horizontais */
+  for(let y=5;y<height-5;y+=2){
+    let darkPixels=0;
+    for(let x=0;x<width;x+=2){
+      const idx=(y*width+x)*4;
+      const brightness=(data[idx]+data[idx+1]+data[idx+2])/3;
+      if(brightness<110) darkPixels++;
+    }
+    if(darkPixels/width>0.35) hLines.push(y);
+  }
+
+  /* Se encontrou linhas regulares, usar para dividir grid */
+  if(vLines.length>=2&&hLines.length>=2){
+    /* Agrupar linhas próximas */
+    const vGrouped=groupNearby(vLines,width*0.04);
+    const hGrouped=groupNearby(hLines,height*0.04);
+
+    if(vGrouped.length>=2&&hGrouped.length>=2){
+      const contours=[];
+      for(let r=0;r<hGrouped.length-1;r++){
+        for(let c=0;c<vGrouped.length-1;c++){
+          const x=Math.round(vGrouped[c]);
+          const y=Math.round(hGrouped[r]);
+          const w=Math.round(vGrouped[c+1]-vGrouped[c]);
+          const h=Math.round(hGrouped[r+1]-hGrouped[r]);
+
+          if(w>minSize&&w<maxSize&&h>minSize&&h<maxSize){
+            contours.push({x,y,w,h,points:[]});
+          }
+        }
+      }
+
+      console.log(`Grid encontrado: ${vGrouped.length}x${hGrouped.length} = ${vGrouped.length-1}x${hGrouped.length-1}`);
+      return contours;
+    }
+  }
+
+  return [];
+}
+
+function groupNearby(arr, threshold){
+  if(arr.length===0) return [];
+  arr.sort((a,b)=>a-b);
+
+  /* Agrupar linhas próximas e pegar a média de cada grupo */
+  const groups=[];
+  let currentGroup=[arr[0]];
+
+  for(let i=1;i<arr.length;i++){
+    if(arr[i]-arr[i-1]>threshold){
+      /* Finalizar grupo atual */
+      const avg=Math.round(currentGroup.reduce((a,b)=>a+b)/currentGroup.length);
+      groups.push(avg);
+      currentGroup=[arr[i]];
+    } else {
+      currentGroup.push(arr[i]);
+    }
+  }
+
+  /* Adicionar último grupo */
+  const avg=Math.round(currentGroup.reduce((a,b)=>a+b)/currentGroup.length);
+  groups.push(avg);
+
+  return groups;
+}
+
+function detectCartasEmGrid(pageCanvas, minSize, maxSize){
+  /* Fallback: dividir página em grid 3x3 ignorando margens */
+  const ctx=pageCanvas.getContext('2d');
+  const imgData=ctx.getImageData(0,0,pageCanvas.width,pageCanvas.height);
+  const data=imgData.data;
+  const width=pageCanvas.width, height=pageCanvas.height;
+
+  /* Encontrar área útil (ignorar margens brancas) */
+  let minX=width, maxX=0, minY=height, maxY=0;
+
+  for(let y=0;y<height;y++){
+    for(let x=0;x<width;x++){
+      const idx=(y*width+x)*4;
+      const brightness=(data[idx]+data[idx+1]+data[idx+2])/3;
+      if(brightness<200){  /* Pixels escuros = conteúdo */
+        minX=Math.min(minX,x);
+        maxX=Math.max(maxX,x);
+        minY=Math.min(minY,y);
+        maxY=Math.max(maxY,y);
+      }
+    }
+  }
+
+  /* Se encontrou conteúdo, usar essa área */
+  if(minX<maxX&&minY<maxY){
+    const contentW=maxX-minX;
+    const contentH=maxY-minY;
+    const cellW=Math.round(contentW/3);
+    const cellH=Math.round(contentH/3);
+    const contours=[];
+
+    for(let r=0;r<3;r++){
+      for(let c=0;c<3;c++){
+        const x=minX+c*cellW;
+        const y=minY+r*cellH;
+        const w=cellW;
+        const h=cellH;
+
+        if(w>minSize&&w<maxSize&&h>minSize&&h<maxSize){
+          contours.push({x:Math.round(x),y:Math.round(y),w:Math.round(w),h:Math.round(h),points:[]});
+        }
+      }
+    }
+
+    return contours;
+  }
+
+  /* Fallback: grid simples se não encontrar área útil */
+  const contours=[];
+  const cols=3, rows=3;
+  const cellW=Math.round(pageCanvas.width/cols);
+  const cellH=Math.round(pageCanvas.height/rows);
+
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const x=c*cellW, y=r*cellH;
+      const w=cellW, h=cellH;
+
+      if(w>minSize&&w<maxSize&&h>minSize&&h<maxSize){
+        contours.push({x,y,w,h,points:[]});
+      }
+    }
+  }
+
+  return contours;
+}
+
+async function extrairCartasDoCanvas(pageCanvas, cartas, config){
+  const extractedImgs=[];
+
+  if(!cartas||cartas.length===0) return extractedImgs;
+
+  for(let i=0;i<cartas.length;i++){
+    const carta=cartas[i];
+
+    /* Usar APENAS a área detectada, SEM nenhum crop */
+    /* As linhas detectadas já marcam as bordas corretas */
+    const x=Math.round(carta.x);
+    const y=Math.round(carta.y);
+    const w=Math.round(carta.w);
+    const h=Math.round(carta.h);
+
+    if(w<50||h<50) continue;
+
+    const cvCarta=document.createElement('canvas');
+    cvCarta.width=w;
+    cvCarta.height=h;
+    const ctxCarta=cvCarta.getContext('2d');
+
+    /* Copiar exatamente a região detectada */
+    ctxCarta.drawImage(pageCanvas,x,y,w,h,0,0,w,h);
+
+    const src=cvCarta.toDataURL('image/jpeg',Math.max(config.quality,0.95));
+    const imgObj={
+      src,
+      name:`[PDF] Carta ${i+1}`,
+      natW:w,
+      natH:h,
+      wCm:cfg.pieceW,
+      hCm:cfg.pieceH,
+      extracted:true
+    };
+
+    extractedImgs.push(imgObj);
+  }
+
+  return extractedImgs;
+}
+
+const dz=$('dropzone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');handleFiles(e.dataTransfer.files);});
+$('filein').addEventListener('change',e=>{handleFiles(e.target.files);e.target.value='';});
+
+const cw=$('canvas-wrap');
+cw.addEventListener('dragover',e=>{e.preventDefault();cw.style.outline='2px solid #378ADD';});
+cw.addEventListener('dragleave',()=>cw.style.outline='');
+cw.addEventListener('drop',e=>{e.preventDefault();cw.style.outline='';handleFiles(e.dataTransfer.files);});
+
+
+/* ── DUPLEX (FRENTE E VERSO) ────────────────────────── */
+/*
+  backCards = array de { backImg, frontImg, pageIdx, cellIdx }
+  Cada entrada liga um verso a uma célula exata na grade de frentes.
+  backPages[pi][cellIdx] = backImg (para renderização/exportação).
+  A célula do verso é espelhada: na folha impressa, a coluna é invertida
+  para que ao virar o papel a carta fique alinhada com a frente.
+*/
+let backCards = [];   /* [{backImg, frontImg, pageIdx, cellIdx, mirrorIdx}] */
+let _pendingBackFiles = [];  /* fila de files aguardando seleção de frente */
+let _pendingBackIdx = 0;     /* qual da fila está sendo processado agora */
+
+function toggleDuplex(on){
+  cfg.duplex=on;
+  cfg._viewingBack=false;
+  $('duplex-panel').style.display=on?'flex':'none';
+  if(on){
+    normPages();
+    setupBackDropzone();
+  }
+  render();updateDuplexInfo();
+}
+
+function updateDuplexInfo(){
+  const el=$('duplex-info'); if(!el)return;
+  const linked=backCards.length;
+  if(!cfg.duplex||!linked){el.style.display='none';return;}
+  el.style.display='';
+  el.innerHTML=`${linked} verso${linked>1?'s':''} vinculado${linked>1?'s':''}<br>Imprima frentes → vire o papel → imprima versos<br><b>Versos espelhados automaticamente</b>`;
+}
+
+function addBackPage(){
+  const c=cap();
+  pages.push(new Array(c).fill(null));
+  backPages.push(new Array(c).fill(null));
+  render(); toast('Par de páginas adicionado');
+}
+
+function updateBackImgSelect(){}  /* não usado mais */
+
+/* ── MIRROR: dado col na frente, retorna col espelhada para o verso ── */
+function mirrorCellIdx(cellIdx, cols){
+  const row = Math.floor(cellIdx / cols);
+  const col = cellIdx % cols;
+  const mirrorCol = cols - 1 - col;
+  return row * cols + mirrorCol;
+}
+
+/* ── RENDERIZA LISTA DE VERSOS VINCULADOS ── */
+function renderBackCardsList(){
+  const el=$('back-cards-list'); if(!el)return;
+  el.innerHTML='';
+  if(!backCards.length){
+    el.innerHTML='<div style="font-size:10px;color:#bbb;text-align:center;padding:6px">Nenhum verso adicionado ainda</div>';
+    return;
+  }
+  const {cols}=calcGrid();
+  backCards.forEach((bc,i)=>{
+    const row=Math.floor(bc.cellIdx/cols)+1;
+    const col=bc.cellIdx%cols+1;
+    const div=document.createElement('div');
+    div.className='bcard';
+    div.innerHTML=`
+      <img src="${bc.backImg.src}" title="Verso">
+      <div style="width:1px;height:32px;background:#eee;flex-shrink:0"></div>
+      <img src="${bc.frontImg.src}" style="width:20px;height:28px;object-fit:cover;border-radius:3px;border:1px solid #ddd;opacity:.7" title="Frente">
+      <div class="bcard-info">
+        <div class="bcard-name">${bc.backImg.name}</div>
+        <div class="bcard-ref">Frente: linha ${row}, col ${col} (folha ${bc.pageIdx+1})</div>
+      </div>
+      <button onclick="removeBackCard(${i})" style="font-size:10px;padding:2px 5px;border:1px solid #f0a0a0;border-radius:4px;background:transparent;cursor:pointer;color:#c00;flex-shrink:0">✕</button>`;
+    el.appendChild(div);
+  });
+}
+
+function removeBackCard(i){
+  const bc=backCards[i];
+  /* limpar da backPages */
+  if(backPages[bc.pageIdx]) backPages[bc.pageIdx][bc.cellIdx]=null;
+  backCards.splice(i,1);
+  renderBackCardsList();
+  updateDuplexInfo();
+  render();
+}
+
+/* ── MODAL: perguntar qual frente ── */
+let _pendingBackObj = null;
+
+function openBackModal(imgObj){
+  _pendingBackObj=imgObj;
+  /* preencher preview do verso */
+  $('bm-verso-thumb').src=imgObj.src;
+  $('bm-verso-name').textContent=imgObj.name;
+
+  /* listar todas as frentes preenchidas — checkboxes para seleção múltipla */
+  const list=$('bm-front-list');
+  list.innerHTML='';
+  const {cols,rows}=calcGrid();
+  let hasAny=false;
+
+  /* cabeçalho "selecionar todos" */
+  const selAllWrap=document.createElement('div');
+  selAllWrap.style.cssText='display:flex;align-items:center;gap:6px;padding:4px 6px;margin-bottom:4px';
+  const selAllCb=document.createElement('input');
+  selAllCb.type='checkbox'; selAllCb.className='sel-check';
+  selAllCb.id='bm-sel-all';
+  const selAllLbl=document.createElement('label');
+  selAllLbl.htmlFor='bm-sel-all';
+  selAllLbl.style.cssText='font-size:11px;color:#555;cursor:pointer;font-weight:600';
+  selAllLbl.textContent='Selecionar todas as frentes';
+  selAllCb.addEventListener('change',()=>{
+    list.querySelectorAll('input.sel-check').forEach(cb=>{cb.checked=selAllCb.checked;cb.closest('.front-card-opt').classList.toggle('selected',selAllCb.checked);});
+  });
+  selAllWrap.appendChild(selAllCb); selAllWrap.appendChild(selAllLbl);
+  list.appendChild(selAllWrap);
+
+  pages.forEach((pg,pi)=>{
+    pg.forEach((frontImg,ci)=>{
+      if(!frontImg)return;
+      hasAny=true;
+      const row=Math.floor(ci/cols)+1, col=ci%cols+1;
+      const occupied = backCards.find(bc=>bc.pageIdx===pi&&bc.cellIdx===ci);
+
+      const opt=document.createElement('div');
+      opt.className='front-card-opt';
+      opt.dataset.pi=pi; opt.dataset.ci=ci;
+      opt.style.opacity=occupied?'.7':'1';
+
+      const cb=document.createElement('input');
+      cb.type='checkbox'; cb.className='sel-check';
+      cb.addEventListener('change',()=>opt.classList.toggle('selected',cb.checked));
+      opt.appendChild(cb);
+
+      const imgEl=document.createElement('img');
+      imgEl.src=frontImg.src; opt.appendChild(imgEl);
+
+      const info=document.createElement('div');
+      info.className='front-card-info';
+      info.innerHTML=`<div class="front-card-name">${frontImg.name}</div>
+        <div class="front-card-sub">Linha ${row} · Col ${col} · Folha ${pi+1}</div>
+        <div class="front-card-pos" style="color:${occupied?'#e07000':'#378ADD'}">${occupied?'⚠ substituirá verso atual':'Livre'}</div>`;
+      opt.appendChild(info);
+
+      /* clicar na linha (fora do checkbox) também marca */
+      opt.addEventListener('click',e=>{
+        if(e.target===cb)return;
+        cb.checked=!cb.checked;
+        opt.classList.toggle('selected',cb.checked);
+      });
+      list.appendChild(opt);
+    });
+  });
+
+  if(!hasAny){
+    list.innerHTML='<div style="font-size:12px;color:#aaa;padding:12px;text-align:center">Nenhuma carta de frente adicionada ainda.<br>Adicione frentes primeiro na seção de imagens.</div>';
+  }
+
+  $('back-modal-overlay').classList.add('show');
+}
+
+function confirmBackModal(replicate=false){
+  const list=$('bm-front-list');
+
+  if(replicate){
+    /* replicar em TODAS as células preenchidas */
+    let count=0;
+    pages.forEach((pg,pii)=>{
+      while(backPages.length<=pii) backPages.push(new Array(cap()).fill(null));
+      while(backPages[pii].length<cap()) backPages[pii].push(null);
+      pg.forEach((fi,cii)=>{
+        if(!fi)return;
+        const prev=backCards.findIndex(bc=>bc.pageIdx===pii&&bc.cellIdx===cii);
+        if(prev>=0) backCards.splice(prev,1);
+        backPages[pii][cii]=_pendingBackObj;
+        backCards.push({backImg:_pendingBackObj,frontImg:fi,pageIdx:pii,cellIdx:cii,mirrorIdx:cii});
+        count++;
+      });
+    });
+    $('back-modal-overlay').classList.remove('show');
+    _pendingBackObj=null;
+    renderBackCardsList(); updateDuplexInfo(); render();
+    toast(`Verso replicado em ${count} carta${count>1?'s':''} ✓`);
+    _pendingBackIdx++; processNextBackFile();
+    return;
+  }
+
+  /* seleção múltipla por checkboxes */
+  const selected=[...list.querySelectorAll('.front-card-opt.selected')];
+  if(!selected.length){toast('Selecione ao menos uma carta de frente');return;}
+
+  selected.forEach(sel=>{
+    const pi=parseInt(sel.dataset.pi);
+    const ci=parseInt(sel.dataset.ci);
+    const frontImg=pages[pi][ci];
+    while(backPages.length<=pi) backPages.push(new Array(cap()).fill(null));
+    while(backPages[pi].length<cap()) backPages[pi].push(null);
+    const prev=backCards.findIndex(bc=>bc.pageIdx===pi&&bc.cellIdx===ci);
+    if(prev>=0) backCards.splice(prev,1);
+    backPages[pi][ci]=_pendingBackObj;
+    backCards.push({backImg:_pendingBackObj,frontImg,pageIdx:pi,cellIdx:ci,mirrorIdx:ci});
+  });
+
+  $('back-modal-overlay').classList.remove('show');
+  _pendingBackObj=null;
+  renderBackCardsList(); updateDuplexInfo(); render();
+  toast(`Verso vinculado a ${selected.length} carta${selected.length>1?'s':''} ✓`);
+  _pendingBackIdx++; processNextBackFile();
+}
+
+function cancelBackModal(){
+  $('back-modal-overlay').classList.remove('show');
+  _pendingBackObj=null;
+  _pendingBackIdx++;
+  processNextBackFile();
+}
+
+function processNextBackFile(){
+  if(_pendingBackIdx>=_pendingBackFiles.length){
+    _pendingBackFiles=[];
+    _pendingBackIdx=0;
+    return;
+  }
+  const obj=_pendingBackFiles[_pendingBackIdx];
+  openBackModal(obj);
+}
+
+/* ── SETUP DO DROP ZONE DE VERSO ── */
+function setupBackDropzone(){
+  const bdz=$('back-dropzone');
+  const bfi=$('back-filein');
+  if(!bdz||!bfi||bdz._setup)return;
+  bdz._setup=true;
+
+  function handleBackFiles(files){
+    const arr=[...files].filter(f=>f.type.startsWith('image/'));
+    if(!arr.length)return;
+    let loaded=0;
+    const objs=[];
+    arr.forEach((file,fi)=>{
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        const img=new Image();
+        img.onload=()=>{
+          objs[fi]={src:ev.target.result,name:file.name,natW:img.naturalWidth,natH:img.naturalHeight};
+          loaded++;
+          if(loaded===arr.length){
+            /* ordenar na ordem original e abrir fila */
+            _pendingBackFiles=objs.filter(Boolean);
+            _pendingBackIdx=0;
+            processNextBackFile();
+          }
+        };
+        img.src=ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  bfi.addEventListener('change',e=>{handleBackFiles(e.target.files);e.target.value='';});
+  bdz.addEventListener('dragover',e=>{e.preventDefault();bdz.style.borderColor='#e08c5d';});
+  bdz.addEventListener('dragleave',()=>bdz.style.borderColor='#ddd');
+  bdz.addEventListener('drop',e=>{e.preventDefault();bdz.style.borderColor='#ddd';handleBackFiles(e.dataTransfer.files);});
+}
+
+/* ── CONTROLES ──────────────────────────────────────── */
+function bindControls(){
+  const binds={
+    'sel-fmt': v=>{cfg.fmt=v;},
+    'inp-bleed':v=>{cfg.bleedMM=parseFloat(v)||0;},
+    'inp-pw':  v=>{cfg.pieceW=parseFloat(v)||6.35;$('sel-preset').value='';renderImgList();},
+    'inp-ph':  v=>{cfg.pieceH=parseFloat(v)||8.89;$('sel-preset').value='';renderImgList();},
+    'inp-gap': v=>{cfg.gapMM=parseFloat(v)||0;},
+    'inp-cols':v=>{cfg.cols=parseInt(v)||2;},
+    'inp-rows':v=>{cfg.rows=parseInt(v)||3;},
+    'sel-dpi': v=>{cfg.dpi=parseInt(v);},
+    'sel-qual':v=>{cfg.quality=parseFloat(v);},
+  };
+  Object.entries(binds).forEach(([id,fn])=>{
+    const el=$(id);if(el)el.addEventListener('change',e=>{fn(e.target.value);normPages();render();});
+  });
+  $('chk-bleed').addEventListener('change',e=>{cfg.showBleed=e.target.checked;render();});
+  $('chk-orient').addEventListener('change',e=>{cfg.autoOrient=e.target.checked;});
+  $('chk-mixed').addEventListener('change',e=>{cfg.mixedSizes=e.target.checked;render();});
+  $('sel-preset').addEventListener('change',e=>{
+    const v=e.target.value;
+    if(!v)return;
+    const [w,h]=v.split('|').map(Number);
+    cfg.pieceW=w; cfg.pieceH=h;
+    $('inp-pw').value=w; $('inp-ph').value=h;
+    normPages();render();renderImgList();
+  });
+  $('chk-marks').addEventListener('change',e=>{cfg.showMarks=e.target.checked;render();});
+  $('chk-auto').addEventListener('change', e=>{cfg.autoGrid=e.target.checked;normPages();render();});
+
+  /* PDF Config listeners */
+  $('sel-pdf-dpi').addEventListener('change', e=>{pdfConfig.dpi=parseInt(e.target.value);});
+  $('sel-pdf-qual').addEventListener('change', e=>{pdfConfig.quality=parseFloat(e.target.value);});
+  $('rng-pdf-sens').addEventListener('change', e=>{
+    pdfConfig.sensitivity=parseFloat(e.target.value);
+    $('sens-val').textContent=pdfConfig.sensitivity.toFixed(1);
+  });
+  $('rng-pdf-sens').addEventListener('input', e=>{
+    $('sens-val').textContent=parseFloat(e.target.value).toFixed(1);
+  });
+}
+
+/* ── CMYK ───────────────────────────────────────────── */
+function rgbToCmyk(r,g,b){
+  const rn=r/255,gn=g/255,bn=b/255;
+  const k=1-Math.max(rn,gn,bn);
+  if(k>=1) return [0,0,0,1];
+  return [(1-rn-k)/(1-k),(1-gn-k)/(1-k),(1-bn-k)/(1-k),k];
+}
+function cmykToRgb(c,m,y,k){
+  return [Math.round(255*(1-c)*(1-k)),Math.round(255*(1-m)*(1-k)),Math.round(255*(1-y)*(1-k))];
+}
+function applyCmyk(imageData){
+  const d=imageData.data;
+  for(let i=0;i<d.length;i+=4){
+    const [c,m,y,k]=rgbToCmyk(d[i],d[i+1],d[i+2]);
+    const [r,g,b]=cmykToRgb(c,m,y,k);
+    d[i]=r;d[i+1]=g;d[i+2]=b;
+  }
+  return imageData;
+}
+function loadImg(src){
+  return new Promise((res,rej)=>{
+    const img=new Image();img.crossOrigin='anonymous';
+    img.onload=()=>res(img);img.onerror=rej;img.src=src;
+  });
+}
+
+/*
+  REGRA DE OURO DA IMPRESSÃO CSS:
+  - O CSS @page define o tamanho físico da folha em mm.
+  - Todos os elementos do layout devem usar APENAS mm como unidade.
+  - Nunca usar px no HTML de impressão — o navegador converte px para mm
+    usando 96dpi de tela, não o DPI da impressora, gerando tamanho errado.
+  - O DPI só afeta a resolução das imagens rasterizadas no canvas,
+    não as dimensões do layout.
+*/
+
+/* converte mm para string CSS "Xmm" com 4 casas decimais */
+const f = mm => mm.toFixed(4)+'mm';
+
+/* ── EXPORT CMYK ────────────────────────────────────── */
+async function exportCMYK(){
+  if(!images.length){toast('Adicione imagens antes de exportar');return;}
+
+  const po=$('progress-overlay');po.classList.add('show');
+  const setPb=v=>$('pb').style.width=v+'%';
+  const setMsg=m=>$('pm').textContent=m;
+
+  const {cols,rows}=calcGrid();
+  const {w:wMM,h:hMM,label}=fmtDims();
+  const isDuplex=cfg.duplex;
+
+  /* tamanho do canvas de conversão CMYK (pixels reais na resolução alvo) */
+  const MM_PER_INCH = 25.4;
+  const pW_px = Math.round(cfg.pieceW * 10 / MM_PER_INCH * cfg.dpi);
+  const pH_px = Math.round(cfg.pieceH * 10 / MM_PER_INCH * cfg.dpi);
+
+  /* dimensões em mm para o layout */
+  const pWmm = cfg.pieceW * 10;   /* cm -> mm */
+  const pHmm = cfg.pieceH * 10;
+  const gapmm = cfg.gapMM;
+  const bleedmm = cfg.bleedMM;
+
+  const totalWmm = cols*pWmm + (cols-1)*gapmm;
+  const totalHmm = rows*pHmm + (rows-1)*gapmm;
+  const oxmm = (wMM - totalWmm) / 2;
+  const oymm = (hMM - totalHmm) / 2;
+
+  /* converter imagens únicas para CMYK via canvas */
+  const uniq=[...new Set(images.map(i=>i.src))];
+  const cache={};
+
+  for(let ui=0;ui<uniq.length;ui++){
+    const src=uniq[ui];
+    setMsg(`Convertendo CMYK: ${ui+1}/${uniq.length}`);
+    setPb(Math.round((ui/uniq.length)*55));
+    await new Promise(r=>setTimeout(r,0));
+    try{
+      const imgEl=await loadImg(src);
+      const cv=document.createElement('canvas');
+      cv.width=pW_px; cv.height=pH_px;
+      const ctx=cv.getContext('2d');
+      ctx.drawImage(imgEl,0,0,pW_px,pH_px);
+      const id=ctx.getImageData(0,0,pW_px,pH_px);
+      applyCmyk(id);
+      ctx.putImageData(id,0,0);
+      cache[src]=cv.toDataURL('image/jpeg',cfg.quality);
+    }catch(e){ cache[src]=src; }
+  }
+
+  setPb(60); setMsg('Montando folhas...'); await new Promise(r=>setTimeout(r,20));
+
+  let sheetsHtml='';
+
+
+  /* helper que monta o HTML das células de uma página */
+  function buildCellsHtml(pg, mirrorX){
+    let cellsHtml='';
+    for(let r=0;r<rows;r++){
+      for(let cc=0;cc<cols;cc++){
+        const idx=r*cols+cc;
+        /* mirror: coluna invertida. Ex: grid 3 colunas, col 0→2, col 1→1, col 2→0 */
+        const renderCc = mirrorX ? (cols - 1 - cc) : cc;
+        const xmm = oxmm + renderCc*(pWmm+gapmm);
+        const ymm = oymm + r*(pHmm+gapmm);
+        const imgObj=pg[idx];
+        let ct='';
+        if(imgObj){
+          const csrc=cache[imgObj.src]||imgObj.src;
+          ct=`<img src="${csrc}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">`;
+          if(cfg.showMarks){
+            const L=3,G=1,SW=0.2;
+            ct+=`<svg width="${f(pWmm)}" height="${f(pHmm)}" viewBox="0 0 ${pWmm} ${pHmm}" style="position:absolute;inset:0;overflow:visible;pointer-events:none;width:${f(pWmm)};height:${f(pHmm)};" xmlns="http://www.w3.org/2000/svg">
+<line x1="0" y1="${-(G+L)}" x2="0" y2="${-G}" stroke="#000" stroke-width="${SW}"/>
+<line x1="${-(G+L)}" y1="0" x2="${-G}" y2="0" stroke="#000" stroke-width="${SW}"/>
+<line x1="${pWmm}" y1="${-(G+L)}" x2="${pWmm}" y2="${-G}" stroke="#000" stroke-width="${SW}"/>
+<line x1="${pWmm+G}" y1="0" x2="${pWmm+G+L}" y2="0" stroke="#000" stroke-width="${SW}"/>
+<line x1="0" y1="${pHmm+G}" x2="0" y2="${pHmm+G+L}" stroke="#000" stroke-width="${SW}"/>
+<line x1="${-(G+L)}" y1="${pHmm}" x2="${-G}" y2="${pHmm}" stroke="#000" stroke-width="${SW}"/>
+<line x1="${pWmm}" y1="${pHmm+G}" x2="${pWmm}" y2="${pHmm+G+L}" stroke="#000" stroke-width="${SW}"/>
+<line x1="${pWmm+G}" y1="${pHmm}" x2="${pWmm+G+L}" y2="${pHmm}" stroke="#000" stroke-width="${SW}"/>
+</svg>`;
+          }
+        } else {
+          ct=`<div style="position:absolute;inset:0;border:0.2mm dashed rgba(0,0,0,.15);"></div>`;
+        }
+        cellsHtml+=`<div style="position:absolute;left:${f(xmm)};top:${f(ymm)};width:${f(pWmm)};height:${f(pHmm)};overflow:hidden;">${ct}</div>`;
+      }
+    }
+    return cellsHtml;
+  }
+
+  const arm = Math.max(bleedmm*2.5, 5);
+  const bleedHtml = cfg.showBleed&&bleedmm>0 ? `
+<svg style="position:absolute;top:0;left:0;overflow:visible;pointer-events:none;z-index:10;" width="${f(wMM)}" height="${f(hMM)}" xmlns="http://www.w3.org/2000/svg">
+  <path d="M0,${arm}mm L0,0 L${arm}mm,0" fill="none" stroke="rgba(210,30,30,.8)" stroke-width="0.3mm"/>
+  <path d="${f(wMM-arm)},0 L${f(wMM)},0 L${f(wMM)},${arm}mm" fill="none" stroke="rgba(210,30,30,.8)" stroke-width="0.3mm"/>
+  <path d="0,${f(hMM-arm)} L0,${f(hMM)} L${arm}mm,${f(hMM)}" fill="none" stroke="rgba(210,30,30,.8)" stroke-width="0.3mm"/>
+  <path d="${f(wMM-arm)},${f(hMM)} L${f(wMM)},${f(hMM)} L${f(wMM)},${f(hMM-arm)}" fill="none" stroke="rgba(210,30,30,.8)" stroke-width="0.3mm"/>
+  <rect x="${f(bleedmm)}" y="${f(bleedmm)}" width="${f(wMM-bleedmm*2)}" height="${f(hMM-bleedmm*2)}" fill="none" stroke="rgba(210,30,30,.2)" stroke-width="0.2mm" stroke-dasharray="3mm,2mm"/>
+</svg>` : '';
+
+  const totalPagePairs = isDuplex ? Math.max(pages.length, backPages.length) : pages.length;
+
+  for(let pi=0;pi<totalPagePairs;pi++){
+    setPb(Math.round(60+(pi/totalPagePairs)*35));
+    setMsg(`Renderizando ${isDuplex?'par':'folha'} ${pi+1} de ${totalPagePairs}...`);
+    await new Promise(r=>setTimeout(r,0));
+
+    /* FRENTE */
+    const fpg=pages[pi]||new Array(cap()).fill(null);
+    sheetsHtml+=`<div class="sheet" style="position:relative;width:${f(wMM)};height:${f(hMM)};background:#fff;overflow:hidden;flex-shrink:0;">${bleedHtml}${buildCellsHtml(fpg,false)}</div>`;
+
+    /* VERSO (espelhado em X para impressão duplex) */
+    if(isDuplex){
+      const bpg=backPages[pi]||new Array(cap()).fill(cfg.defaultBackImg);
+      sheetsHtml+=`<div class="sheet back" style="position:relative;width:${f(wMM)};height:${f(hMM)};background:#fff;overflow:hidden;flex-shrink:0;">${bleedHtml}${buildCellsHtml(bpg,true)}</div>`;
+    }
+  }
+
+  setPb(98); setMsg('Abrindo janela de impressao...'); await new Promise(r=>setTimeout(r,60));
+
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<title>PnP CMYK — ${label} — ${pages.length} folha${pages.length>1?'s':''} — ${cfg.dpi}dpi</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+@page{size:${wMM}mm ${hMM}mm;margin:0}
+body{margin:0;background:#555;display:flex;flex-direction:column;align-items:center;gap:8mm;padding:8mm;min-height:100vh}
+.sheet{flex-shrink:0;page-break-after:always}
+.sheet:last-child{page-break-after:avoid}
+@media print{
+  body{background:white!important;padding:0!important;gap:0!important}
+}
+</style></head><body>
+${sheetsHtml}
+<script>window.onload=()=>{setTimeout(()=>window.print(),400)}<\/script>
+</body></html>`);
+  win.document.close();
+
+  po.classList.remove('show');
+  $('pb').style.width='0%';
+  toast(`${pages.length} folha${pages.length>1?'s':''} exportada${pages.length>1?'s':''} em CMYK`);
+}
+
+/* ── PRINT DIRETO (sem conversão CMYK) ──────────────── */
+function doPrint(){
+  const {w:wMM,h:hMM}=fmtDims();
+  const {cols,rows}=calcGrid();
+  const pWmm=cfg.pieceW*10, pHmm=cfg.pieceH*10;
+  const gapmm=cfg.gapMM, bleedmm=cfg.bleedMM;
+  const totalWmm=cols*pWmm+(cols-1)*gapmm;
+  const totalHmm=rows*pHmm+(rows-1)*gapmm;
+  const oxmm=(wMM-totalWmm)/2, oymm=(hMM-totalHmm)/2;
+
+  let sheetsHtml='';
+  pages.forEach((pg,pi)=>{
+    let cellsHtml='';
+    for(let r=0;r<rows;r++){
+      for(let cc=0;cc<cols;cc++){
+        const idx=r*cols+cc;
+        const xmm=oxmm+cc*(pWmm+gapmm);
+        const ymm=oymm+r*(pHmm+gapmm);
+        const imgObj=pg[idx];
+        let content='';
+        if(imgObj){
+          content=`<img src="${imgObj.src}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">`;
+          if(cfg.showMarks){
+            const L=3,G=1,SW=0.2;
+            content+=`<svg width="${f(pWmm)}" height="${f(pHmm)}" viewBox="0 0 ${pWmm} ${pHmm}" style="position:absolute;inset:0;overflow:visible;pointer-events:none;width:${f(pWmm)};height:${f(pHmm)};" xmlns="http://www.w3.org/2000/svg">
+<line x1="0" y1="${-(G+L)}" x2="0" y2="${-G}" stroke="#000" stroke-width="${SW}"/>
+<line x1="${-(G+L)}" y1="0" x2="${-G}" y2="0" stroke="#000" stroke-width="${SW}"/>
+<line x1="${pWmm}" y1="${-(G+L)}" x2="${pWmm}" y2="${-G}" stroke="#000" stroke-width="${SW}"/>
+<line x1="${pWmm+G}" y1="0" x2="${pWmm+G+L}" y2="0" stroke="#000" stroke-width="${SW}"/>
+<line x1="0" y1="${pHmm+G}" x2="0" y2="${pHmm+G+L}" stroke="#000" stroke-width="${SW}"/>
+<line x1="${-(G+L)}" y1="${pHmm}" x2="${-G}" y2="${pHmm}" stroke="#000" stroke-width="${SW}"/>
+<line x1="${pWmm}" y1="${pHmm+G}" x2="${pWmm}" y2="${pHmm+G+L}" stroke="#000" stroke-width="${SW}"/>
+<line x1="${pWmm+G}" y1="${pHmm}" x2="${pWmm+G+L}" y2="${pHmm}" stroke="#000" stroke-width="${SW}"/>
+</svg>`;
+          }
+        } else {
+          content=`<div style="position:absolute;inset:0;border:0.2mm dashed rgba(0,0,0,.15);"></div>`;
+        }
+        cellsHtml+=`<div style="position:absolute;left:${f(xmm)};top:${f(ymm)};width:${f(pWmm)};height:${f(pHmm)};overflow:hidden;">${content}</div>`;
+      }
+    }
+    let bleedHtml='';
+    if(cfg.showBleed&&bleedmm>0){
+      const arm2=Math.max(bleedmm*2.5,5);
+      bleedHtml=`<svg style="position:absolute;top:0;left:0;overflow:visible;pointer-events:none;z-index:10;" width="${f(wMM)}" height="${f(hMM)}" xmlns="http://www.w3.org/2000/svg">
+  <path d="M0,${arm2}mm L0,0 L${arm2}mm,0" fill="none" stroke="rgba(210,30,30,.8)" stroke-width="0.3mm"/>
+  <path d="${f(wMM-arm2)},0 L${f(wMM)},0 L${f(wMM)},${arm2}mm" fill="none" stroke="rgba(210,30,30,.8)" stroke-width="0.3mm"/>
+  <path d="0,${f(hMM-arm2)} L0,${f(hMM)} L${arm2}mm,${f(hMM)}" fill="none" stroke="rgba(210,30,30,.8)" stroke-width="0.3mm"/>
+  <path d="${f(wMM-arm2)},${f(hMM)} L${f(wMM)},${f(hMM)} L${f(wMM)},${f(hMM-arm2)}" fill="none" stroke="rgba(210,30,30,.8)" stroke-width="0.3mm"/>
+  <rect x="${f(bleedmm)}" y="${f(bleedmm)}" width="${f(wMM-bleedmm*2)}" height="${f(hMM-bleedmm*2)}" fill="none" stroke="rgba(210,30,30,.2)" stroke-width="0.2mm" stroke-dasharray="3mm,2mm"/>
+</svg>`;
+    }
+    sheetsHtml+=`<div class="sheet" style="position:relative;width:${f(wMM)};height:${f(hMM)};background:#fff;overflow:hidden;flex-shrink:0;">${bleedHtml}${cellsHtml}</div>`;
+  });
+
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+@page{size:${wMM}mm ${hMM}mm;margin:0}
+body{margin:0;background:#555;display:flex;flex-direction:column;align-items:center;gap:8mm;padding:8mm}
+.sheet{flex-shrink:0;page-break-after:always}
+.sheet:last-child{page-break-after:avoid}
+@media print{body{background:white!important;padding:0!important;gap:0!important}}
+</style></head><body>${sheetsHtml}
+<script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script>
+</body></html>`);
+  win.document.close();
+}
+
+function copyConfig(){
+  const {cols,rows}=calcGrid();
+  const txt=[
+    'PnP & Past Up — Configuracao',
+    '----------------------------',
+    `Folha: ${fmtDims().label}`,
+    `Peca: ${cfg.pieceW} x ${cfg.pieceH} cm`,
+    `Sangria: ${cfg.bleedMM} mm | Gap: ${cfg.gapMM} mm`,
+    `Grid: ${cols} x ${rows} = ${cols*rows} pecas/folha`,
+    `Paginas: ${pages.length}`,
+    `DPI: ${cfg.dpi} | Qualidade: ${Math.round(cfg.quality*100)}%`,
+  ].join('\n');
+  navigator.clipboard.writeText(txt).then(()=>toast('Configuracao copiada!')).catch(()=>alert(txt));
+}
+
+bindControls();
+render();
+/* inicializar dropzone de verso se duplex já estiver ativo */
+if(cfg.duplex) setupBackDropzone();
+</script>
+
+<!-- MODAL: qual frente corresponde a este verso? -->
+<div id="back-modal-overlay">
+  <div id="back-modal">
+    <div id="back-modal-head">
+      <h3>Qual carta de frente é este verso?</h3>
+      <p>Selecione a carta da frente à qual este verso pertence. Ele será posicionado na célula exata para impressão duplex.</p>
+    </div>
+    <div id="back-modal-body">
+      <div id="back-modal-preview" style="display:flex;align-items:center;gap:10px;padding:10px;background:#f8f8f8;border-radius:8px;margin-bottom:4px">
+        <img id="bm-verso-thumb" style="width:44px;height:62px;object-fit:cover;border-radius:5px;border:1px solid #ddd">
+        <div>
+          <div id="bm-verso-name" style="font-size:12px;font-weight:600;color:#222"></div>
+          <div style="font-size:10px;color:#888">Verso a ser posicionado</div>
+        </div>
+      </div>
+      <div id="bm-front-list" style="display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+    <div id="back-modal-foot">
+      <button onclick="cancelBackModal()">Cancelar</button>
+      <button onclick="confirmBackModal(true)" style="background:#fef3e2;color:#7a4e00;border-color:#f0c070;font-weight:600">Replicar em todos</button>
+      <button class="confirm-btn" onclick="confirmBackModal(false)">Vincular selecionadas</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
