@@ -40,24 +40,11 @@
 
 ### Via Web (Recomendado)
 
-Abra em seu navegador:
+ acesse a versão online (GitHub Pages):
 ```
-http://localhost:8000/index.html
-```
-
-Ou acesse a versão online (GitHub Pages):
-```
-https://seu-usuario.github.io/pnp-cardboardgame/
+https://Chiareli.github.io/pnp-cardboardgame/
 ```
 
-### Localmente
-
-1. **Clone ou baixe o repositório**
-2. **Inicie um servidor HTTP** (Python):
-   ```powershell
-   python -m http.server 8000
-   ```
-3. **Abra no navegador**: `http://localhost:8000`
 
 ### Passos de Uso
 
