@@ -11,12 +11,14 @@
 ### ✨ Principais Funcionalidades
 
 - 📄 **Upload de imagens e PDFs**
-- 🔍 **Detecção automática de cartas em PDFs** (3 estratégias inteligentes)
+- 🔍 **Detecção automática de cartas em PDFs
 - 📊 **Renderização em alta definição** (150-900 DPI configurável)
 - 🎨 **Grid de impressão customizável** (formatos A3, A4, Letter, Tabloid, fotográfico)
 - 💾 **Exportação CMYK profissional** com marcas de corte e sangria
-- 🎭 **Suporte a frente e verso** (duplex printing)
+- 🎭 **Suporte a frente e verso** (duplex printing), incluindo extração de versos direto de PDF
 - 📏 **Predefinições de tamanho** (Poker, Bridge, Tarot, e mais)
+- 🔀 **Organização de grid**: embaralhar, duplicar (ao lado da original) e reorganizar automaticamente removendo espaços vazios entre páginas
+- 🖱️ **Movimentação de cartas** entre células via botão "Mover" (seleciona origem e destino)
 
 ---
 
@@ -42,7 +44,7 @@
 
  acesse a versão online (GitHub Pages):
 ```
-https://Chiareli.github.io/pnp-cardboardgame/
+https://chiareli.github.io/pnp-cardboardgame-main/
 ```
 
 
@@ -53,7 +55,11 @@ https://Chiareli.github.io/pnp-cardboardgame/
    - Imagens: Arraste diretamente
    - PDFs: Ajuste resolução (600 DPI recomendado) e deixe a detecção automática fazer o trabalho
 3. **Visualize no grid**
-4. **Configure frente/verso** (opcional)
+   - Use **Embaralhar** para randomizar a ordem das cartas
+   - Use **Organizar** para remover espaços vazios (ex: após excluir uma carta) e compactar as páginas automaticamente
+   - Use **Mover** em uma carta e depois em outra célula para trocar as duas de lugar
+   - Use **Dup** para duplicar uma carta, inserindo a cópia logo ao lado da original
+4. **Configure frente/verso** (opcional) — aceita tanto imagens quanto PDFs para os versos.
 5. **Exporte em CMYK** com marcas de corte
 
 ---
@@ -91,8 +97,6 @@ Mantém a licença do projeto original. Consulte o repositório original para de
 
 ## 💡 Dicas de Uso
 
-- **PDFs com espaçamento**: Use estratégia de Transição de Cor (detecção automática)
-- **PDFs compactados (3×3)**: Use fallback Grid Automático
 - **Máxima qualidade**: Configure resolução em 900 DPI + qualidade 100%
 - **Impressão profissional**: Sempre use exportação CMYK
 
