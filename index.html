@@ -249,9 +249,9 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
       <div class="row"><label>Linhas</label><input type="number" id="inp-rows" value="3" min="1" max="30"><span id="rows-src" class="unit">auto</span></div>
     </div>
     <div style="display:flex;gap:5px;margin-top:7px">
-      <button class="bsm" style="flex:1" onclick="fillGrid()">Preencher</button>
       <button class="bsm" style="flex:1" onclick="clearGrid()">Limpar</button>
       <button class="bsm" style="flex:1" onclick="shuffleGrid()">Embaralhar</button>
+      <button class="bsm" style="flex:1" onclick="compactGrid()">Organizar</button>
     </div>
   </div>
 
@@ -280,7 +280,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
           <div id="back-dropzone"
             onclick="document.getElementById('back-filein').click()"
             style="border:1.5px dashed #ddd;border-radius:6px;padding:10px;text-align:center;cursor:pointer;background:#fff;transition:.15s">
-            <input type="file" id="back-filein" accept="image/*" multiple style="display:none">
+            <input type="file" id="back-filein" accept="image/*,.pdf" multiple style="display:none">
             <div style="font-size:18px;color:#ddd;margin-bottom:3px">↩</div>
             <div style="font-size:11px;color:#bbb;line-height:1.4">Arraste ou clique para<br>adicionar versos das cartas</div>
           </div>
@@ -443,6 +443,8 @@ let pdfConfig = {
   sensitivity: 0.7,
   detectMode: 'auto'
 };
+
+let moveSource = null;
 
 const mm2px = mm => mm * PX_CM / 10;
 const cm2px = cm => cm * PX_CM;
@@ -618,6 +620,8 @@ function buildSheet(pg,cols,rows,pi,wPx,hPx,mirror=false){
       const cell=document.createElement('div');
       cell.className='cell';
       cell.style.cssText=`left:${x}px;top:${y}px;width:${w}px;height:${h}px;`;
+      const realIdx=pg.indexOf(imgObj);
+      const cellIdx=realIdx<0?idx:realIdx;
       if(imgObj){
         const im=document.createElement('img');
         im.src=imgObj.src; im.className='cell-img';
@@ -629,11 +633,15 @@ function buildSheet(pg,cols,rows,pi,wPx,hPx,mirror=false){
         emp.innerHTML=`<span>${(imgObj===undefined?'':'vazio')}</span>`;
         cell.appendChild(emp);
       }
+
+      const isSelected=moveSource&&moveSource.page===pi&&moveSource.idx===cellIdx&&moveSource.isBack===mirror;
+      if(isSelected) cell.style.outline='2px solid #e08c5d';
+
       const ov=document.createElement('div');
       ov.className='cell-ov';
-      const realIdx=pg.indexOf(imgObj);
-      ov.innerHTML=`<button onclick="cellDup(${pi},${realIdx<0?idx:realIdx},event)">Dup</button><button class="rd" onclick="cellClear(${pi},${realIdx<0?idx:realIdx},event)">Limpar</button>`;
+      ov.innerHTML=`<button onclick="cellMove(${pi},${cellIdx},${mirror},event)">${isSelected?'Cancelar':'Mover'}</button><button onclick="cellDup(${pi},${cellIdx},event)">Dup</button><button class="rd" onclick="cellClear(${pi},${cellIdx},event)">Limpar</button>`;
       cell.appendChild(ov);
+
       inner.appendChild(cell);
     });
     /* bleed e retorno antecipado */
@@ -693,10 +701,14 @@ function buildSheet(pg,cols,rows,pi,wPx,hPx,mirror=false){
         cell.appendChild(emp);
       }
 
+      const isSelected=moveSource&&moveSource.page===pi&&moveSource.idx===idx&&moveSource.isBack===mirror;
+      if(isSelected) cell.style.outline='2px solid #e08c5d';
+
       const ov=document.createElement('div');
       ov.className='cell-ov';
-      ov.innerHTML=`<button onclick="cellDup(${pi},${idx},event)">Dup</button><button class="rd" onclick="cellClear(${pi},${idx},event)">Limpar</button>`;
+      ov.innerHTML=`<button onclick="cellMove(${pi},${idx},${mirror},event)">${isSelected?'Cancelar':'Mover'}</button><button onclick="cellDup(${pi},${idx},event)">Dup</button><button class="rd" onclick="cellClear(${pi},${idx},event)">Limpar</button>`;
       cell.appendChild(ov);
+
       inner.appendChild(cell);
     }
   }
@@ -751,6 +763,14 @@ function updatePageSel(){
     if(i===currentPage) o.selected=true;
     sel.appendChild(o);
   });
+  sel.onchange=null;
+  sel.addEventListener('change',e=>{
+    const newPage=parseInt(e.target.value);
+    if(newPage!==currentPage){
+      currentPage=newPage;
+      render();
+    }
+  });
 }
 
 /* ── CELL ACTIONS ───────────────────────────────────── */
@@ -766,14 +786,34 @@ function cellDup(pi,idx,e){
   if(e)e.stopPropagation();
   const src=pages[pi][idx]; if(!src)return;
   const c=cap();
+
+  /* montar lista sequencial de imagens (sem buracos), inserir a cópia logo após a origem */
+  const flat=[];
+  let srcFlatIdx=-1;
   for(let p=0;p<pages.length;p++){
     for(let i=0;i<c;i++){
-      if(!pages[p][i]){pages[p][i]=src;render();renderImgList();return;}
+      const img=pages[p][i];
+      if(img){
+        if(p===pi&&i===idx) srcFlatIdx=flat.length;
+        flat.push(img);
+      }
     }
   }
-  const np=new Array(c).fill(null); np[0]=src;
-  pages.push(np); render(); renderImgList();
-  toast('Nova folha criada automaticamente');
+  if(srcFlatIdx<0) return;
+  flat.splice(srcFlatIdx+1,0,src);
+
+  const neededPages=Math.max(1,Math.ceil(flat.length/c));
+  pages=[];
+  for(let p=0;p<neededPages;p++){
+    const pg=new Array(c).fill(null);
+    for(let i=0;i<c;i++){
+      const fi=p*c+i;
+      if(fi<flat.length) pg[i]=flat[fi];
+    }
+    pages.push(pg);
+  }
+
+  render(); renderImgList();
 }
 
 function cellClear(pi,idx,e){
@@ -783,15 +823,45 @@ function cellClear(pi,idx,e){
   render();renderImgList();
 }
 
+function cellMove(pi,idx,isBack,e){
+  if(e)e.stopPropagation();
+
+  if(!moveSource){
+    moveSource={page:pi,idx:idx,isBack:isBack};
+    toast('Origem selecionada — clique em "Mover" no destino');
+    render();
+    return;
+  }
+
+  if(moveSource.page===pi&&moveSource.idx===idx&&moveSource.isBack===isBack){
+    moveSource=null;
+    toast('Movimentação cancelada');
+    render();
+    return;
+  }
+
+  const arrFrom=moveSource.isBack?backPages[moveSource.page]:pages[moveSource.page];
+  const arrTo=isBack?backPages[pi]:pages[pi];
+  const temp=arrTo[idx];
+  arrTo[idx]=arrFrom[moveSource.idx];
+  arrFrom[moveSource.idx]=temp;
+
+  moveSource=null;
+  render();renderImgList();
+  toast('Imagem movida');
+}
+
 function fillGrid(){
   if(!images.length){toast('Adicione imagens primeiro');return;}
   const c=cap();
-  pages.forEach((pg,pi)=>{for(let i=0;i<c;i++) pg[i]=images[i%images.length];});
+  const pg=pages[currentPage];
+  for(let i=0;i<c;i++) pg[i]=images[i%images.length];
   render();renderImgList();
 }
 
 function clearGrid(){
-  pages.forEach(pg=>{for(let i=0;i<pg.length;i++) pg[i]=null;});
+  const pg=pages[currentPage];
+  for(let i=0;i<pg.length;i++) pg[i]=null;
   render();renderImgList();
 }
 
@@ -800,6 +870,33 @@ function shuffleGrid(){
   const c=cap();
   pages.forEach(pg=>{for(let i=0;i<c;i++) pg[i]=images[Math.floor(Math.random()*images.length)];});
   render();renderImgList();
+}
+
+function compactGrid(){
+  // Coletar TODAS as imagens de TODAS as páginas
+  const allImages=[];
+  pages.forEach(pg=>{
+    pg.forEach(img=>{ if(img!==null) allImages.push(img); });
+  });
+
+  // Calcular capacidade e quantas páginas são necessárias
+  const c=cap();
+  const neededPages=Math.max(1, Math.ceil(allImages.length/c));
+
+  // Reconstruir páginas com as imagens reorganizadas
+  pages=[];
+  for(let p=0; p<neededPages; p++){
+    const pg=new Array(c).fill(null);
+    for(let i=0; i<c; i++){
+      const imgIdx=p*c+i;
+      if(imgIdx<allImages.length) pg[i]=allImages[imgIdx];
+    }
+    pages.push(pg);
+  }
+
+  currentPage=0;
+  render();renderImgList();
+  toast('Grid reorganizado');
 }
 
 function addPage(){
@@ -815,8 +912,6 @@ function removePage(){
   currentPage=Math.min(currentPage,pages.length-1);
   render(); toast('Folha removida');
 }
-
-$('sel-page').addEventListener('change',e=>{currentPage=parseInt(e.target.value);render();});
 
 function adjZoom(d){zoom=Math.max(.15,Math.min(2,zoom+d));render();}
 function setZoom(v){zoom=v;render();}
@@ -1756,7 +1851,14 @@ function setupBackDropzone(){
   bdz._setup=true;
 
   function handleBackFiles(files){
-    const arr=[...files].filter(f=>f.type.startsWith('image/'));
+    const imageFiles=[...files].filter(f=>f.type.startsWith('image/'));
+    const pdfFiles=[...files].filter(f=>f.type==='application/pdf');
+
+    if(imageFiles.length) handleBackImageFiles(imageFiles);
+    if(pdfFiles.length) handleBackPdfFiles(pdfFiles);
+  }
+
+  function handleBackImageFiles(arr){
     if(!arr.length)return;
     let loaded=0;
     const objs=[];
@@ -1768,7 +1870,6 @@ function setupBackDropzone(){
           objs[fi]={src:ev.target.result,name:file.name,natW:img.naturalWidth,natH:img.naturalHeight};
           loaded++;
           if(loaded===arr.length){
-            /* ordenar na ordem original e abrir fila */
             _pendingBackFiles=objs.filter(Boolean);
             _pendingBackIdx=0;
             processNextBackFile();
@@ -1778,6 +1879,52 @@ function setupBackDropzone(){
       };
       reader.readAsDataURL(file);
     });
+  }
+
+  async function handleBackPdfFiles(pdfFiles){
+    showProgress('Extraindo versos do PDF...', 'Carregando...');
+    let totalExtracted=0;
+    const backObjs=[];
+
+    for(let pdfFile of pdfFiles){
+      try{
+        updateProgress(10, `Carregando PDF: ${pdfFile.name}...`);
+        const pagesCanvases=await loadPdf(pdfFile);
+
+        for(let pageNum=0; pageNum<pagesCanvases.length; pageNum++){
+          updateProgress(Math.round(20+(pageNum/pagesCanvases.length)*60), `Detectando cartas na página ${pageNum+1}/${pagesCanvases.length}...`);
+          await new Promise(r=>setTimeout(r,10));
+
+          try{
+            const cartas=await detectarCartas(pagesCanvases[pageNum], pdfConfig.sensitivity);
+            const extractedImgs=await extrairCartasDoCanvas(pagesCanvases[pageNum], cartas, pdfConfig);
+
+            for(let imgObj of extractedImgs){
+              imgObj.source='pdf';
+              imgObj.pdfFile=pdfFile.name;
+              imgObj.pdfPage=pageNum+1;
+              backObjs.push(imgObj);
+              totalExtracted++;
+            }
+          }catch(e){
+            console.error(`Erro ao detectar versos na página ${pageNum+1}:`, e);
+          }
+        }
+      }catch(e){
+        toast(`Erro ao processar ${pdfFile.name}: ${e.message}`);
+        console.error(e);
+      }
+    }
+
+    hideProgress();
+    if(totalExtracted>0){
+      _pendingBackFiles=backObjs;
+      _pendingBackIdx=0;
+      processNextBackFile();
+      toast(`${totalExtracted} verso${totalExtracted>1?'s':''} extraído${totalExtracted>1?'s':''} ✓`);
+    }else{
+      toast('Nenhuma carta detectada no PDF de verso. Tente ajustar a sensibilidade.');
+    }
   }
 
   bfi.addEventListener('change',e=>{handleBackFiles(e.target.files);e.target.value='';});
